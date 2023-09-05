@@ -12,7 +12,7 @@ private:
     UIState _lastState;
 
 public:
-    UIState EnterState(UIState lastState, String country, String tag, SelectBy by);
+    UIState EnterState(UIState lastState);
     void HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display);
     void HandleUp();
     void HandleDown();
@@ -32,15 +32,11 @@ void CountriesListState::GetCountriesPage()
     countries = radioListClient.GetCountries();
 }
 
-UIState CountriesListState::EnterState(UIState lastState, String country, String tag, SelectBy by)
+UIState CountriesListState::EnterState(UIState lastState)
 {
-    lastState = _lastState;
-   
-    radioListClient.SetCountry(country);
-    radioListClient.SetTag(tag);
-    countries = radioListClient.GetRadioURLsByCountry();
-
-    return SELECT_STATION;
+    lastState = _lastState;      
+    countries = radioListClient.GetCountries();
+    return SELECT_COUNTRY;
 }
 
 void CountriesListState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
@@ -50,9 +46,9 @@ void CountriesListState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
     do
     {
         display->setCursor(0, 20);
-        display->printf(countries[currentIndex].Name.c_str());
+        display->printf(countries[currentIndex].name.c_str());
         display->setCursor(0, 40);
-        display->printf("Bitrate: %i ", countries[currentIndex].Bitrate);
+        display->printf("Stations: %i ", countries[currentIndex].count);
     } while (display->nextPage());
 }
 

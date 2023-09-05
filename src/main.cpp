@@ -10,6 +10,7 @@
 #include <U8g2lib.h>
 #include <PlayingState.h>
 #include <StationsListState.h>
+#include <CountriesListState.h>
 
 const char *ssid = "UPC97C7D2D";
 const char *password = "jw4hejbQpcpk";
@@ -23,6 +24,7 @@ U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0);
 unsigned long lastDisplayUpdateMillis;
 PlayingState playingState;
 StationsListState stationsListState;
+CountriesListState countriesListState;
 
 void setup()
 {
@@ -39,7 +41,7 @@ void setup()
   vs1053.Init();
   StartAudioPlayTask();
   display.begin();
-  currentState = stationsListState.EnterState(SELECT_COUNTRY,"PL","",COUNTRY);
+  currentState = countriesListState.EnterState(MODE_SELECT);
 }
 
 void loop()
@@ -48,6 +50,9 @@ void loop()
     playingState.HandleLoop(&display);
   if(currentState == SELECT_STATION)
     stationsListState.HandleLoop(&display);
+  if(currentState == SELECT_COUNTRY)
+    countriesListState.HandleLoop(&display);
+
 
   if (Serial.available() > 0)
   {
@@ -67,6 +72,11 @@ void loop()
     if (incomingByte == 115)
     {
       // down
+      if(currentState == SELECT_COUNTRY)
+      {
+        countriesListState.HandleDown();
+      }
+
       if (currentState == SELECT_STATION)
       {
         stationsListState.HandleDown();
@@ -75,6 +85,10 @@ void loop()
     if (incomingByte == 119)
     {
       //up
+      if (currentState == SELECT_COUNTRY)
+      {
+        countriesListState.HandleUp();
+      }
        if (currentState == SELECT_STATION)
       {
         stationsListState.HandleUp();
@@ -82,6 +96,12 @@ void loop()
     }
     if (incomingByte == 10)
     {
+      if(currentState == SELECT_COUNTRY)
+      {
+        CountryDTO countryDto = countriesListState.HandleEnter();
+        currentState = stationsListState.EnterState(SELECT_COUNTRY, countryDto.code, "", COUNTRY); 
+      }
+
       if (currentState == SELECT_STATION)
       {
         RadioStationDTO stationToPlay = stationsListState.HandleEnter();

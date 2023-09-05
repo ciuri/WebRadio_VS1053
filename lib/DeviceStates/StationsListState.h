@@ -36,7 +36,7 @@ UIState StationsListState::EnterState(UIState lastState, String country, String 
 {
     lastState = _lastState;
    
-    radioListClient.SetCountry("PL");
+    radioListClient.SetCountry(country);
     radioListClient.SetTag(tag);
     radioStations = radioListClient.GetRadioURLsByCountry();
 

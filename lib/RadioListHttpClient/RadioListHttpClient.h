@@ -22,33 +22,19 @@ class RadioListHttpClient
 
     public:
     vector<String> GetTags(int limit, int offset);
-    vector<String> GetCountries(int limit, int offset);
+    vector<CountryDTO> GetCountries();
     vector<RadioStationDTO> GetRadioURLsByCountry();
     vector<RadioStationDTO> GetRadioURLsByTag();
     void SetCountry(String country);
     void SetTag(String tag);
     void SetNextStationsPage();
     void SetPrevStationsPage();
+    void SetNextCountriesPage();
+    void SetPrevCountriesPage();
+    void SetNextTagsPage();
+    void SetPrevTagsPage();
 };
 
-vector<String> RadioListHttpClient::GetCountries(int limit, int offset)
-{
-    vector<String> outList;
-    DynamicJsonDocument jsonDoc(8072);
-    char urlText[300];
-    sprintf(urlText,"https://at1.api.radio-browser.info/json/tags?order=stationcount&limit=%i&reverse=true&offset=%i",limit,offset);
-    httpClient.begin(urlText);
-    int result = httpClient.GET();
-    //String outString = httpClient.getString();
-    deserializeJson(jsonDoc,httpClient.getStream());
-    httpClient.end();
-    for(auto item : jsonDoc.as<JsonArray>())
-    {
-        const char* name = item["name"];
-        Serial.println(name);
-    }    
-    return outList;
-}
 
 vector<String> RadioListHttpClient::GetTags(int limit, int offset)
 {
@@ -69,6 +55,30 @@ vector<String> RadioListHttpClient::GetTags(int limit, int offset)
     return outList;
 }
 
+vector<CountryDTO> RadioListHttpClient::GetCountries()
+{
+    vector<CountryDTO> outList;
+    DynamicJsonDocument jsonDoc(8072);
+    char urlText[300];
+    sprintf(urlText,"https://at1.api.radio-browser.info/json/countries?order=stationcount&limit=%i&reverse=true&offset=%i", countriesPerPage, countriesPerPage*countriesPageIndex);
+    httpClient.begin(urlText);
+    int result = httpClient.GET();
+    //String outString = httpClient.getString();
+    deserializeJson(jsonDoc,httpClient.getStream());
+    httpClient.end();
+    for(auto item : jsonDoc.as<JsonArray>())
+    {
+        const char* name = item["name"];
+        const char* code = item["iso_3166_1"];
+        int stationsCount = item["stationcount"];
+        CountryDTO c;
+        c.name= name;
+        c.code = code;
+        c.count = stationsCount;
+        outList.push_back(c);
+    }    
+    return outList;
+}
 vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByCountry()
 {
     vector<RadioStationDTO> outList;
@@ -145,5 +155,24 @@ void RadioListHttpClient::SetNextStationsPage()
 void RadioListHttpClient::SetPrevStationsPage()
 {
     stationsPageIndex--;
+}
+
+void RadioListHttpClient::SetNextCountriesPage()
+{
+    countriesPageIndex++;
+}
+
+void RadioListHttpClient::SetPrevCountriesPage()
+{
+    countriesPageIndex--;
+}
+void RadioListHttpClient::SetNextTagsPage()
+{
+    tagsPageIndex++;
+}
+
+void RadioListHttpClient::SetPrevTagsPage()
+{
+    tagsPageIndex--;
 }
 #endif

@@ -23,7 +23,7 @@ TaskHandle_t playTaskHandle = NULL;
 TaskHandle_t playAudioTaskHandle = NULL;
 String _currentURL = "";
 PlayerState _playerState = STOPPED;
-CircularBuffer<uint8_t, 32768> circularBuffer;
+CircularBuffer<uint8_t, 16384> circularBuffer;
 std::mutex mtx;
 bool overwriteChunking = false;
 

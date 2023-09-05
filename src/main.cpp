@@ -46,13 +46,12 @@ void setup()
 
 void loop()
 {
-  if(currentState == PLAY)
+  if (currentState == PLAY)
     playingState.HandleLoop(&display);
-  if(currentState == SELECT_STATION)
+  if (currentState == SELECT_STATION)
     stationsListState.HandleLoop(&display);
-  if(currentState == SELECT_COUNTRY)
+  if (currentState == SELECT_COUNTRY)
     countriesListState.HandleLoop(&display);
-
 
   if (Serial.available() > 0)
   {
@@ -72,7 +71,7 @@ void loop()
     if (incomingByte == 115)
     {
       // down
-      if(currentState == SELECT_COUNTRY)
+      if (currentState == SELECT_COUNTRY)
       {
         countriesListState.HandleDown();
       }
@@ -84,28 +83,32 @@ void loop()
     }
     if (incomingByte == 119)
     {
-      //up
+      // up
       if (currentState == SELECT_COUNTRY)
       {
         countriesListState.HandleUp();
       }
-       if (currentState == SELECT_STATION)
+      if (currentState == SELECT_STATION)
       {
         stationsListState.HandleUp();
       }
     }
     if (incomingByte == 10)
     {
-      if(currentState == SELECT_COUNTRY)
+      switch (currentState)
+      {
+      case SELECT_COUNTRY:
       {
         CountryDTO countryDto = countriesListState.HandleEnter();
-        currentState = stationsListState.EnterState(SELECT_COUNTRY, countryDto.code, "", COUNTRY); 
+        currentState = stationsListState.EnterState(currentState, countryDto.code, "", COUNTRY);
+        break;
       }
-
-      if (currentState == SELECT_STATION)
+      case SELECT_STATION:
       {
         RadioStationDTO stationToPlay = stationsListState.HandleEnter();
         currentState = playingState.EnterState(currentState, stationToPlay);
+        break;
+      }
       }
     }
     if (incomingByte == 100)
@@ -119,13 +122,18 @@ void loop()
     if (incomingByte == 97)
     {
       // left
-       if (currentState == SELECT_STATION)
+      switch (currentState)
       {
-        currentState = stationsListState.HandleBack();
-      }
-       if (currentState == PLAY)
-      {
-         currentState = playingState.HandleBack();
+        case SELECT_STATION:
+        {
+          currentState = stationsListState.HandleBack();
+          break;
+        }
+        case PLAY:
+        {
+          currentState = playingState.HandleBack();
+          break;
+        }
       }
     }
   }

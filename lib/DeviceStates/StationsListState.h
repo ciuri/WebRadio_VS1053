@@ -34,7 +34,7 @@ void StationsListState::GetRadioUrlsPage()
 
 UIState StationsListState::EnterState(UIState lastState, String country, String tag, SelectBy by)
 {
-    lastState = _lastState;
+    _lastState = lastState;
    
     radioListClient.SetCountry(country);
     radioListClient.SetTag(tag);

@@ -24,7 +24,7 @@ public:
     RadioListHttpClient radioListClient;
 
     RadioStationDTO HandleEnter();
-    UIState HandleBack(UIState uiLastState);
+    UIState HandleBack();
 };
 
 void StationsListState::GetRadioUrlsPage()
@@ -56,7 +56,7 @@ void StationsListState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
     } while (display->nextPage());
 }
 
-UIState StationsListState::HandleBack(UIState uiLastState)
+UIState StationsListState::HandleBack()
 {
     return _lastState;
 }

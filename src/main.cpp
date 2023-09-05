@@ -121,7 +121,7 @@ void loop()
       // left
        if (currentState == SELECT_STATION)
       {
-        stationsListState.HandleLeft();
+        currentState = stationsListState.HandleBack();
       }
        if (currentState == PLAY)
       {

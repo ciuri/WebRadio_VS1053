@@ -9,7 +9,7 @@
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <PlayingState.h>
-#include <StationsListByCountryState.h>
+#include <StationsListState.h>
 
 const char *ssid = "UPC97C7D2D";
 const char *password = "jw4hejbQpcpk";
@@ -22,7 +22,7 @@ U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0);
 
 unsigned long lastDisplayUpdateMillis;
 PlayingState playingState;
-StationsListByCountryState stationsListByCountryState;
+StationsListState stationsListState;
 
 void setup()
 {
@@ -39,15 +39,15 @@ void setup()
   vs1053.Init();
   StartAudioPlayTask();
   display.begin();
-  currentState = stationsListByCountryState.EnterState(SELECT_COUNTRY);
+  currentState = stationsListState.EnterState(SELECT_COUNTRY,"PL","",COUNTRY);
 }
 
 void loop()
 {
   if(currentState == PLAY)
     playingState.HandleLoop(&display);
-  if(currentState == SELECT_BY_COUNTRY)
-    stationsListByCountryState.HandleLoop(&display);
+  if(currentState == SELECT_STATION)
+    stationsListState.HandleLoop(&display);
 
   if (Serial.available() > 0)
   {
@@ -67,41 +67,41 @@ void loop()
     if (incomingByte == 115)
     {
       // down
-      if (currentState == SELECT_BY_COUNTRY)
+      if (currentState == SELECT_STATION)
       {
-        stationsListByCountryState.HandleDown();
+        stationsListState.HandleDown();
       }
     }
     if (incomingByte == 119)
     {
       //up
-       if (currentState == SELECT_BY_COUNTRY)
+       if (currentState == SELECT_STATION)
       {
-        stationsListByCountryState.HandleUp();
+        stationsListState.HandleUp();
       }
     }
     if (incomingByte == 10)
     {
-      if (currentState == SELECT_BY_COUNTRY)
+      if (currentState == SELECT_STATION)
       {
-        RadioStationDTO stationToPlay = stationsListByCountryState.HandleEnter();
+        RadioStationDTO stationToPlay = stationsListState.HandleEnter();
         currentState = playingState.EnterState(currentState, stationToPlay);
       }
     }
     if (incomingByte == 100)
     {
       // right
-      if (currentState == SELECT_BY_COUNTRY)
+      if (currentState == SELECT_STATION)
       {
-        stationsListByCountryState.HandleRight();
+        stationsListState.HandleRight();
       }
     }
     if (incomingByte == 97)
     {
       // left
-       if (currentState == SELECT_BY_COUNTRY)
+       if (currentState == SELECT_STATION)
       {
-        stationsListByCountryState.HandleLeft();
+        stationsListState.HandleLeft();
       }
        if (currentState == PLAY)
       {

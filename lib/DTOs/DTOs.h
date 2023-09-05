@@ -31,9 +31,15 @@ enum UIState
     MODE_SELECT,
     SELECT_TAG,
     SELECT_COUNTRY,
-    SELECT_BY_TAG,
-    SELECT_BY_COUNTRY,
+    SELECT_STATION,
     PLAY
+};
+
+enum SelectBy
+{
+    TAG,
+    COUNTRY,
+    NAME
 };
 
 #endif

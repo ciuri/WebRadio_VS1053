@@ -6,13 +6,13 @@
 #include <DTOs.h>
 #include <RadioListHttpClient.h>
 
-class StationsListByCountryState
+class StationsListState
 {
 private:
     UIState _lastState;
 
 public:
-    UIState EnterState(UIState lastState);
+    UIState EnterState(UIState lastState, String country, String tag, SelectBy by);
     void HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display);
     void HandleUp();
     void HandleDown();
@@ -27,22 +27,23 @@ public:
     UIState HandleBack(UIState uiLastState);
 };
 
-void StationsListByCountryState::GetRadioUrlsPage()
+void StationsListState::GetRadioUrlsPage()
 {    
     radioStations = radioListClient.GetRadioURLsByCountry();
 }
 
-UIState StationsListByCountryState::EnterState(UIState lastState)
+UIState StationsListState::EnterState(UIState lastState, String country, String tag, SelectBy by)
 {
     lastState = _lastState;
    
     radioListClient.SetCountry("PL");
+    radioListClient.SetTag(tag);
     radioStations = radioListClient.GetRadioURLsByCountry();
 
-    return SELECT_BY_COUNTRY;
+    return SELECT_STATION;
 }
 
-void StationsListByCountryState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
+void StationsListState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
 {
     display->setFont(u8g2_font_ncenB08_tr);
     display->firstPage();
@@ -55,12 +56,12 @@ void StationsListByCountryState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *
     } while (display->nextPage());
 }
 
-UIState StationsListByCountryState::HandleBack(UIState uiLastState)
+UIState StationsListState::HandleBack(UIState uiLastState)
 {
     return _lastState;
 }
 
-void StationsListByCountryState::HandleUp()
+void StationsListState::HandleUp()
 {
     if (currentStationIndex > 0)
     {
@@ -75,7 +76,7 @@ void StationsListByCountryState::HandleUp()
     }
 }
 
-void StationsListByCountryState::HandleDown()
+void StationsListState::HandleDown()
 {
     if (currentStationIndex < radioStations.size() - 1)
     {
@@ -90,19 +91,19 @@ void StationsListByCountryState::HandleDown()
     }
 }
 
-RadioStationDTO StationsListByCountryState::HandleEnter()
+RadioStationDTO StationsListState::HandleEnter()
 {
     return radioStations[currentStationIndex];
 }
 
-void StationsListByCountryState::HandleRight()
+void StationsListState::HandleRight()
 {
     radioListClient.SetNextStationsPage();
     GetRadioUrlsPage();
     currentStationIndex = 0;
 }
 
-void StationsListByCountryState::HandleLeft()
+void StationsListState::HandleLeft()
 {
     radioListClient.SetPrevStationsPage();
     GetRadioUrlsPage();

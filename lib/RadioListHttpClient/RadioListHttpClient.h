@@ -19,12 +19,14 @@ class RadioListHttpClient
     int stationsPageIndex =0;
     String selectedTag;
     String selectedCountry;
+    SelectBy selectBy;
 
     public:
-    vector<String> GetTags(int limit, int offset);
+    vector<TagDTO> GetTags();
     vector<CountryDTO> GetCountries();
     vector<RadioStationDTO> GetRadioURLsByCountry();
     vector<RadioStationDTO> GetRadioURLsByTag();
+    vector<RadioStationDTO> GetRadioURLs();
     void SetCountry(String country);
     void SetTag(String tag);
     void SetNextStationsPage();
@@ -33,15 +35,32 @@ class RadioListHttpClient
     void SetPrevCountriesPage();
     void SetNextTagsPage();
     void SetPrevTagsPage();
+    void SetSelectBy(SelectBy sb);
 };
 
-
-vector<String> RadioListHttpClient::GetTags(int limit, int offset)
+void RadioListHttpClient::SetSelectBy(SelectBy sb)
 {
-    vector<String> outList;
+    selectBy = sb;
+}
+
+vector<RadioStationDTO> RadioListHttpClient::GetRadioURLs()
+{
+    switch(selectBy)
+    {
+    case TAG:
+        return GetRadioURLsByTag();
+        break;
+    case COUNTRY:
+        return GetRadioURLsByCountry();
+        break;
+    }   
+}
+vector<TagDTO> RadioListHttpClient::GetTags()
+{
+    vector<TagDTO> outList;
     DynamicJsonDocument jsonDoc(8072);
     char urlText[300];
-    sprintf(urlText,"https://at1.api.radio-browser.info/json/tags?order=stationcount&limit=%i&reverse=true&offset=%i",limit, offset);
+    sprintf(urlText,"https://at1.api.radio-browser.info/json/tags?order=stationcount&limit=%i&reverse=true&offset=%i",tagsPerPage, tagsPerPage*tagsPageIndex);
     httpClient.begin(urlText);
     int result = httpClient.GET();
     //String outString = httpClient.getString();
@@ -50,7 +69,11 @@ vector<String> RadioListHttpClient::GetTags(int limit, int offset)
     for(auto item : jsonDoc.as<JsonArray>())
     {
         const char* name = item["name"];
-        Serial.println(name);
+        int stationsCount = item["stationcount"];
+        TagDTO tagDto;
+        tagDto.name = name;
+        tagDto.count = stationsCount;
+        outList.push_back(tagDto);
     }    
     return outList;
 }

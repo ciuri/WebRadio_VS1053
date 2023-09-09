@@ -28,8 +28,8 @@ public:
 };
 
 void StationsListState::GetRadioUrlsPage()
-{    
-    radioStations = radioListClient.GetRadioURLsByCountry();
+{   
+    radioStations = radioListClient.GetRadioURLs();
 }
 
 UIState StationsListState::EnterState(UIState lastState, String country, String tag, SelectBy by)
@@ -38,7 +38,8 @@ UIState StationsListState::EnterState(UIState lastState, String country, String 
    
     radioListClient.SetCountry(country);
     radioListClient.SetTag(tag);
-    radioStations = radioListClient.GetRadioURLsByCountry();
+    radioListClient.SetSelectBy(by);
+    radioStations = radioListClient.GetRadioURLs();
 
     return SELECT_STATION;
 }

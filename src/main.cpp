@@ -11,6 +11,7 @@
 #include <PlayingState.h>
 #include <StationsListState.h>
 #include <CountriesListState.h>
+#include <TagsListState.h>
 
 const char *ssid = "UPC97C7D2D";
 const char *password = "jw4hejbQpcpk";
@@ -25,6 +26,7 @@ unsigned long lastDisplayUpdateMillis;
 PlayingState playingState;
 StationsListState stationsListState;
 CountriesListState countriesListState;
+TagsListState tagsListState;
 
 void setup()
 {
@@ -41,7 +43,7 @@ void setup()
   vs1053.Init();
   StartAudioPlayTask();
   display.begin();
-  currentState = countriesListState.EnterState(MODE_SELECT);
+  currentState = tagsListState.EnterState(MODE_SELECT);
 }
 
 void loop()
@@ -52,6 +54,8 @@ void loop()
     stationsListState.HandleLoop(&display);
   if (currentState == SELECT_COUNTRY)
     countriesListState.HandleLoop(&display);
+  if (currentState == SELECT_TAG)
+    tagsListState.HandleLoop(&display);
 
   if (Serial.available() > 0)
   {
@@ -80,6 +84,11 @@ void loop()
       {
         stationsListState.HandleDown();
       }
+
+      if (currentState == SELECT_TAG)
+      {
+        tagsListState.HandleDown();
+      }
     }
     if (incomingByte == 119)
     {
@@ -91,6 +100,10 @@ void loop()
       if (currentState == SELECT_STATION)
       {
         stationsListState.HandleUp();
+      }
+      if (currentState == SELECT_TAG)
+      {
+        tagsListState.HandleUp();
       }
     }
     if (incomingByte == 10)
@@ -109,6 +122,12 @@ void loop()
         currentState = playingState.EnterState(currentState, stationToPlay);
         break;
       }
+      case SELECT_TAG:
+      {
+        TagDTO tagDto = tagsListState.HandleEnter();
+        currentState = stationsListState.EnterState(currentState, "", tagDto.name, TAG);
+        break;
+      }
       }
     }
     if (incomingByte == 100)
@@ -117,6 +136,10 @@ void loop()
       if (currentState == SELECT_STATION)
       {
         stationsListState.HandleRight();
+      }
+      if (currentState == SELECT_TAG)
+      {
+        tagsListState.HandleRight();
       }
     }
     if (incomingByte == 97)
@@ -127,6 +150,11 @@ void loop()
         case SELECT_STATION:
         {
           currentState = stationsListState.HandleBack();
+          break;
+        }
+        case SELECT_TAG:
+        {
+          currentState = tagsListState.HandleBack();
           break;
         }
         case PLAY:

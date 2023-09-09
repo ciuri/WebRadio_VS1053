@@ -83,11 +83,11 @@ static void PlayTask(void *parameters)
     {
       if (overwriteChunking)
         chunked = false;
-      long chunkSize = chunked ? _currentStream->GetChunkSize() : 8192;
+      long chunkSize = chunked ? _currentStream->GetChunkSize() : 4096;
       if (chunkSize == -1)
       {
         overwriteChunking = true;
-        chunkSize = 8192;
+        chunkSize = 4096;
       }
       long toRead = chunkSize; // chunkSize;
 
@@ -116,7 +116,7 @@ static void PlayTask(void *parameters)
         }
         else
         {
-          delay(10);
+          delay(1);
         }
       }
     }
@@ -139,8 +139,8 @@ static void PlayAudioTask(void *parameters)
 
   while (true)
   {
-    if (circularBuffer.size() > 512)
-    {
+    if (circularBuffer.size() > 32)
+    {      
       uint8_t audio[32];
 
       for (int i = 0; i < 32; i++)
@@ -150,15 +150,22 @@ static void PlayAudioTask(void *parameters)
         mtx.unlock();
       }
       vs1053.Play(audio, 32);
+
+      if(circularBuffer.size()<128)
+      {
+         std::string info = "Warning  - Buffer size: " + std::to_string(circularBuffer.size());
+        Serial.println(info.c_str());
+      }
     }
     else
     {
       if (_playerState == STOPPED)
         delay(100);
       else
-      {        
-        std::string info = "Buffer size: " + std::to_string(circularBuffer.size());
-        Serial.println(info.c_str());
+      {
+        std::string info = "Buffer empty: " + std::to_string(circularBuffer.size());
+        Serial.println(info.c_str());             
+       
         delay(100);
       }
     }

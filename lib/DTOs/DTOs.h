@@ -26,6 +26,20 @@ class TagDTO
     int count;
 };
 
+enum SelectBy
+{
+    TAG,
+    COUNTRY,
+    NAME
+};
+
+class SearchModeDTO
+{
+    public:
+    String name;
+    SelectBy selectBy;
+};
+
 enum UIState
 {
     MODE_SELECT,
@@ -35,11 +49,6 @@ enum UIState
     PLAY
 };
 
-enum SelectBy
-{
-    TAG,
-    COUNTRY,
-    NAME
-};
+
 
 #endif

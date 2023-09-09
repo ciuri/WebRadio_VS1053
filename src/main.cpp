@@ -12,6 +12,7 @@
 #include <StationsListState.h>
 #include <CountriesListState.h>
 #include <TagsListState.h>
+#include <SelectModeState.h>
 
 const char *ssid = "UPC97C7D2D";
 const char *password = "jw4hejbQpcpk";
@@ -27,6 +28,7 @@ PlayingState playingState;
 StationsListState stationsListState;
 CountriesListState countriesListState;
 TagsListState tagsListState;
+SelectModeState selectModeState;
 
 void setup()
 {
@@ -43,7 +45,7 @@ void setup()
   vs1053.Init();
   StartAudioPlayTask();
   display.begin();
-  currentState = tagsListState.EnterState(MODE_SELECT);
+  currentState = selectModeState.EnterState(MODE_SELECT);
 }
 
 void loop()
@@ -56,6 +58,8 @@ void loop()
     countriesListState.HandleLoop(&display);
   if (currentState == SELECT_TAG)
     tagsListState.HandleLoop(&display);
+  if (currentState == MODE_SELECT)
+    selectModeState.HandleLoop(&display);
 
   if (Serial.available() > 0)
   {
@@ -89,6 +93,11 @@ void loop()
       {
         tagsListState.HandleDown();
       }
+
+      if (currentState == MODE_SELECT)
+      {
+        selectModeState.HandleDown();
+      }
     }
     if (incomingByte == 119)
     {
@@ -105,29 +114,42 @@ void loop()
       {
         tagsListState.HandleUp();
       }
+      if (currentState == MODE_SELECT)
+      {
+        selectModeState.HandleUp();
+      }
     }
     if (incomingByte == 10)
     {
       switch (currentState)
       {
-      case SELECT_COUNTRY:
-      {
-        CountryDTO countryDto = countriesListState.HandleEnter();
-        currentState = stationsListState.EnterState(currentState, countryDto.code, "", COUNTRY);
-        break;
-      }
-      case SELECT_STATION:
-      {
-        RadioStationDTO stationToPlay = stationsListState.HandleEnter();
-        currentState = playingState.EnterState(currentState, stationToPlay);
-        break;
-      }
-      case SELECT_TAG:
-      {
-        TagDTO tagDto = tagsListState.HandleEnter();
-        currentState = stationsListState.EnterState(currentState, "", tagDto.name, TAG);
-        break;
-      }
+        case SELECT_COUNTRY:
+        {
+          CountryDTO countryDto = countriesListState.HandleEnter();
+          currentState = stationsListState.EnterState(currentState, countryDto.code, "", COUNTRY);
+          break;
+        }
+        case SELECT_STATION:
+        {
+          RadioStationDTO stationToPlay = stationsListState.HandleEnter();
+          currentState = playingState.EnterState(currentState, stationToPlay);
+          break;
+        }
+        case SELECT_TAG:
+        {
+          TagDTO tagDto = tagsListState.HandleEnter();
+          currentState = stationsListState.EnterState(currentState, "", tagDto.name, TAG);
+          break;
+        }
+        case MODE_SELECT:
+        {
+          SearchModeDTO searchModeDto = selectModeState.HandleEnter();
+          if(searchModeDto.selectBy==TAG)
+            currentState = tagsListState.EnterState(currentState);
+          else
+            currentState = countriesListState.EnterState(currentState);
+          break;
+        }
       }
     }
     if (incomingByte == 100)
@@ -155,6 +177,11 @@ void loop()
         case SELECT_TAG:
         {
           currentState = tagsListState.HandleBack();
+          break;
+        }
+        case SELECT_COUNTRY:
+        {
+          currentState = countriesListState.HandleBack();
           break;
         }
         case PLAY:

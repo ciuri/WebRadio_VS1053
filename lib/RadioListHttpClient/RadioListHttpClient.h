@@ -54,6 +54,7 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLs()
         return GetRadioURLsByCountry();
         break;
     }   
+    return GetRadioURLsByCountry(); //default
 }
 vector<TagDTO> RadioListHttpClient::GetTags()
 {

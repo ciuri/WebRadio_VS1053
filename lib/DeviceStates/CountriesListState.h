@@ -24,7 +24,7 @@ public:
     RadioListHttpClient radioListClient;
 
     CountryDTO HandleEnter();
-    UIState HandleBack(UIState uiLastState);
+    UIState HandleBack();
 };
 
 void CountriesListState::GetCountriesPage()
@@ -52,7 +52,7 @@ void CountriesListState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
     } while (display->nextPage());
 }
 
-UIState CountriesListState::HandleBack(UIState uiLastState)
+UIState CountriesListState::HandleBack()
 {
     return _lastState;
 }

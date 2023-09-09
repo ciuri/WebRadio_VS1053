@@ -19,10 +19,10 @@ public:
     void HandleLeft();
     void HandleRight();
     void GetTagsPage();
-    vector<String> modes;
+    vector<SearchModeDTO> modes;
     int currentIndex = 0;
  
-    String HandleEnter();
+    SearchModeDTO HandleEnter();
     UIState HandleBack();
 };
 
@@ -30,8 +30,19 @@ UIState SelectModeState::EnterState(UIState lastState)
 {
     _lastState = lastState;
     modes.clear();
-    modes.push_back("Tags");
-    modes.push_back("Countries");
+
+    SearchModeDTO byCountry;
+    byCountry.name = "Select by coutry";
+    byCountry.selectBy = COUNTRY;
+
+    SearchModeDTO byTag;
+    byTag.name = "Select by tag";
+    byTag.selectBy = TAG;
+    
+
+    modes.push_back(byCountry);
+    modes.push_back(byTag);
+    return MODE_SELECT;
 }
 
 void SelectModeState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
@@ -41,7 +52,7 @@ void SelectModeState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
     do
     {
         display->setCursor(0, 20);
-        display->printf(modes[currentIndex].c_str());
+        display->printf(modes[currentIndex].name.c_str());
     } while (display->nextPage());
 }
 
@@ -66,7 +77,9 @@ void SelectModeState::HandleDown()
     }   
 }
 
-String SelectModeState::HandleEnter()
+SearchModeDTO SelectModeState::HandleEnter()
 {
     return modes[currentIndex];
 }
+
+#endif

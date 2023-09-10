@@ -76,6 +76,7 @@ static void PlayTask(void *parameters)
     if (_currentStream == NULL)
     {
       Serial.println("Current Stream is null");
+      stopPlaying=true;
       break;
     } 
 
@@ -126,7 +127,8 @@ static void PlayTask(void *parameters)
     delete[] mp3buff;
     mp3buff = NULL;
   }
-  _currentStream->stop();
+  if(_currentStream != NULL)
+    _currentStream->stop();
   webRadioHttpClient.end();
   _playerState = STOPPED;
   Serial.println("Ending play task");

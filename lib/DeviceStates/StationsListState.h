@@ -28,14 +28,15 @@ public:
 };
 
 void StationsListState::GetRadioUrlsPage()
-{   
+{
     radioStations = radioListClient.GetRadioURLs();
 }
 
 UIState StationsListState::EnterState(UIState lastState, String country, String tag, SelectBy by)
 {
     _lastState = lastState;
-   
+    currentStationIndex = 0;
+    radioListClient.ResetStationsPageIndex();
     radioListClient.SetCountry(country);
     radioListClient.SetTag(tag);
     radioListClient.SetSelectBy(by);
@@ -54,6 +55,8 @@ void StationsListState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
         display->printf(radioStations[currentStationIndex].Name.c_str());
         display->setCursor(0, 40);
         display->printf("Bitrate: %i ", radioStations[currentStationIndex].Bitrate);
+        display->setCursor(0, 60);
+        display->printf("%i", radioListClient.GetPageStartIndex() + currentStationIndex + 1);
     } while (display->nextPage());
 }
 

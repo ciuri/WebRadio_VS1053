@@ -27,6 +27,7 @@ class RadioListHttpClient
     vector<RadioStationDTO> GetRadioURLsByCountry();
     vector<RadioStationDTO> GetRadioURLsByTag();
     vector<RadioStationDTO> GetRadioURLs();
+    void ResetStationsPageIndex();
     void SetCountry(String country);
     void SetTag(String tag);
     void SetNextStationsPage();
@@ -36,7 +37,18 @@ class RadioListHttpClient
     void SetNextTagsPage();
     void SetPrevTagsPage();
     void SetSelectBy(SelectBy sb);
+    int GetPageStartIndex();
 };
+
+void RadioListHttpClient::ResetStationsPageIndex()
+{
+    stationsPageIndex=0;
+}
+
+int RadioListHttpClient::GetPageStartIndex()
+{
+    return stationsPageIndex*stationsPerPage;
+}
 
 void RadioListHttpClient::SetSelectBy(SelectBy sb)
 {
@@ -178,7 +190,8 @@ void RadioListHttpClient::SetNextStationsPage()
 
 void RadioListHttpClient::SetPrevStationsPage()
 {
-    stationsPageIndex--;
+    if(stationsPageIndex>0)
+        stationsPageIndex--;
 }
 
 void RadioListHttpClient::SetNextCountriesPage()
@@ -188,7 +201,8 @@ void RadioListHttpClient::SetNextCountriesPage()
 
 void RadioListHttpClient::SetPrevCountriesPage()
 {
-    countriesPageIndex--;
+    if(countriesPageIndex>0)
+        countriesPageIndex--;
 }
 void RadioListHttpClient::SetNextTagsPage()
 {
@@ -197,6 +211,7 @@ void RadioListHttpClient::SetNextTagsPage()
 
 void RadioListHttpClient::SetPrevTagsPage()
 {
-    tagsPageIndex--;
+    if(tagsPageIndex>0)
+        tagsPageIndex--;
 }
 #endif

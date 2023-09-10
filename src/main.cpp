@@ -24,7 +24,7 @@ VS1053Device vs1053;
 U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0);
 
 unsigned long lastDisplayUpdateMillis;
-PlayingState playingState;
+PlayingState playingState(&vs1053);
 StationsListState stationsListState;
 CountriesListState countriesListState;
 TagsListState tagsListState;
@@ -98,6 +98,10 @@ void loop()
       {
         selectModeState.HandleDown();
       }
+       if (currentState == PLAY)
+      {
+        playingState.HandleDown();
+      }
     }
     if (incomingByte == 119)
     {
@@ -117,6 +121,10 @@ void loop()
       if (currentState == MODE_SELECT)
       {
         selectModeState.HandleUp();
+      }
+      if (currentState == PLAY)
+      {
+        playingState.HandleUp();
       }
     }
     if (incomingByte == 10)

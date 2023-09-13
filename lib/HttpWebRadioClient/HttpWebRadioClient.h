@@ -131,6 +131,7 @@ static void PlayTask(void *parameters)
     _currentStream->stop();
   webRadioHttpClient.end();
   _playerState = STOPPED;
+  circularBuffer.clear();
   Serial.println("Ending play task");
   vTaskDelete(playTaskHandle);
 }

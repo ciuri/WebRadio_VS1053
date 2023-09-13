@@ -30,6 +30,8 @@ CountriesListState countriesListState;
 TagsListState tagsListState;
 SelectModeState selectModeState;
 
+static void HandleLoop(void *parameters);
+
 void setup()
 {
   esp_task_wdt_init(30, false);
@@ -46,91 +48,95 @@ void setup()
   StartAudioPlayTask();
   display.begin();
   currentState = selectModeState.EnterState(MODE_SELECT);
+  xTaskCreate(HandleLoop, "HandleLoop", 4000, NULL, 3, NULL);
 }
 
-void loop()
+
+static void HandleLoop(void *parameters)
 {
-  if (currentState == PLAY)
-    playingState.HandleLoop(&display);
-  if (currentState == SELECT_STATION)
-    stationsListState.HandleLoop(&display);
-  if (currentState == SELECT_COUNTRY)
-    countriesListState.HandleLoop(&display);
-  if (currentState == SELECT_TAG)
-    tagsListState.HandleLoop(&display);
-  if (currentState == MODE_SELECT)
-    selectModeState.HandleLoop(&display);
-
-  if (Serial.available() > 0)
+  while (true)
   {
-    char incomingByte = Serial.read();
-    // Serial.print("I received: ");
-    // Serial.println(incomingByte, DEC);
+    if (currentState == PLAY)
+      playingState.HandleLoop(&display);
+    if (currentState == SELECT_STATION)
+      stationsListState.HandleLoop(&display);
+    if (currentState == SELECT_COUNTRY)
+      countriesListState.HandleLoop(&display);
+    if (currentState == SELECT_TAG)
+      tagsListState.HandleLoop(&display);
+    if (currentState == MODE_SELECT)
+      selectModeState.HandleLoop(&display);
 
-    if (incomingByte == 51)
+    if (Serial.available() > 0)
     {
-      StopPlayTask();
-    }
+      char incomingByte = Serial.read();
+      Serial.print("I received: ");
+      Serial.println(incomingByte, DEC);
 
-    if (incomingByte == 52)
-    {
-      ToggleChunking();
-    }
-    if (incomingByte == 115)
-    {
-      // down
-      if (currentState == SELECT_COUNTRY)
+      if (incomingByte == 51)
       {
-        countriesListState.HandleDown();
-      }
-
-      if (currentState == SELECT_STATION)
-      {
-        stationsListState.HandleDown();
+        StopPlayTask();
       }
 
-      if (currentState == SELECT_TAG)
+      if (incomingByte == 52)
       {
-        tagsListState.HandleDown();
+        ToggleChunking();
       }
+      if (incomingByte == 115)
+      {
+        // down
+        if (currentState == SELECT_COUNTRY)
+        {
+          countriesListState.HandleDown();
+        }
 
-      if (currentState == MODE_SELECT)
-      {
-        selectModeState.HandleDown();
+        if (currentState == SELECT_STATION)
+        {
+          stationsListState.HandleDown();
+        }
+
+        if (currentState == SELECT_TAG)
+        {
+          tagsListState.HandleDown();
+        }
+
+        if (currentState == MODE_SELECT)
+        {
+          selectModeState.HandleDown();
+        }
+        if (currentState == PLAY)
+        {
+          playingState.HandleDown();
+        }
       }
-       if (currentState == PLAY)
+      if (incomingByte == 119)
       {
-        playingState.HandleDown();
+        // up
+        if (currentState == SELECT_COUNTRY)
+        {
+          countriesListState.HandleUp();
+        }
+        if (currentState == SELECT_STATION)
+        {
+          stationsListState.HandleUp();
+        }
+        if (currentState == SELECT_TAG)
+        {
+          tagsListState.HandleUp();
+        }
+        if (currentState == MODE_SELECT)
+        {
+          selectModeState.HandleUp();
+        }
+        if (currentState == PLAY)
+        {
+          playingState.HandleUp();
+        }
       }
-    }
-    if (incomingByte == 119)
-    {
-      // up
-      if (currentState == SELECT_COUNTRY)
+      if (incomingByte == 10)
       {
-        countriesListState.HandleUp();
-      }
-      if (currentState == SELECT_STATION)
-      {
-        stationsListState.HandleUp();
-      }
-      if (currentState == SELECT_TAG)
-      {
-        tagsListState.HandleUp();
-      }
-      if (currentState == MODE_SELECT)
-      {
-        selectModeState.HandleUp();
-      }
-      if (currentState == PLAY)
-      {
-        playingState.HandleUp();
-      }
-    }
-    if (incomingByte == 10)
-    {
-      switch (currentState)
-      {
+        switch (currentState)
+        {
         case SELECT_COUNTRY:
         {
           CountryDTO countryDto = countriesListState.HandleEnter();
@@ -152,31 +158,31 @@ void loop()
         case MODE_SELECT:
         {
           SearchModeDTO searchModeDto = selectModeState.HandleEnter();
-          if(searchModeDto.selectBy==TAG)
+          if (searchModeDto.selectBy == TAG)
             currentState = tagsListState.EnterState(currentState);
           else
             currentState = countriesListState.EnterState(currentState);
           break;
         }
+        }
       }
-    }
-    if (incomingByte == 100)
-    {
-      // right
-      if (currentState == SELECT_STATION)
+      if (incomingByte == 100)
       {
-        stationsListState.HandleRight();
+        // right
+        if (currentState == SELECT_STATION)
+        {
+          stationsListState.HandleRight();
+        }
+        if (currentState == SELECT_TAG)
+        {
+          tagsListState.HandleRight();
+        }
       }
-      if (currentState == SELECT_TAG)
+      if (incomingByte == 97)
       {
-        tagsListState.HandleRight();
-      }
-    }
-    if (incomingByte == 97)
-    {
-      // left
-      switch (currentState)
-      {
+        // left
+        switch (currentState)
+        {
         case SELECT_STATION:
         {
           currentState = stationsListState.HandleBack();
@@ -197,7 +203,13 @@ void loop()
           currentState = playingState.HandleBack();
           break;
         }
+        }
       }
     }
   }
+}
+
+void loop()
+{
+  delay(10);
 }

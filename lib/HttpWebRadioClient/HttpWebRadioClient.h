@@ -26,7 +26,7 @@ PlayerState _playerState = STOPPED;
 CircularBuffer<uint8_t, 16384> circularBuffer;
 std::mutex mtx;
 bool overwriteChunking = false;
-
+bool chunked = false;
 static void PlayTask(void *parameters)
 {
   esp_task_wdt_init(30, false);
@@ -45,8 +45,7 @@ static void PlayTask(void *parameters)
                           ENCODING, BITRATE, LOCATION};
 
   HTTPClient webRadioHttpClient;
-  MusicStream *_currentStream = NULL;
-  bool chunked = false;
+  MusicStream *_currentStream = NULL;  
   Serial.println("Start Play Task");
   Serial.println(_currentURL);
   stopPlaying = false;

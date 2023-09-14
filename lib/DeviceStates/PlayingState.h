@@ -11,10 +11,12 @@ class PlayingState
 private:
     UIState _lastState;
     RadioStationDTO currentStation;
-    VS1053Device* _vs1053;
+    VS1053Device *_vs1053;
+    u8g2_uint_t offset; // current offset for the scrolling text
+    u8g2_uint_t width;
 
 public:
-    PlayingState(VS1053Device* vs1053);
+    PlayingState(VS1053Device *vs1053);
     UIState EnterState(UIState lastState, RadioStationDTO station);
     void HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display);
     void HandleUp();
@@ -25,13 +27,13 @@ public:
     UIState HandleBack();
 };
 
-PlayingState::PlayingState(VS1053Device* vs1053)
+PlayingState::PlayingState(VS1053Device *vs1053)
 {
     _vs1053 = vs1053;
 }
 
 UIState PlayingState::EnterState(UIState lastState, RadioStationDTO station)
-{    
+{
     currentStation = station;
     _lastState = lastState;
     StopPlayTask();
@@ -52,6 +54,11 @@ void PlayingState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
         display->printf("\nBuffer size: %i\n", circularBuffer.size());
         display->setCursor(0, 60);
         display->printf("Bitrate: %i", currentStation.Bitrate);
+        if (chunked)
+        {
+            display->setCursor(70, 60);
+            display->printf("Chunked");
+        }
     } while (display->nextPage());
 }
 

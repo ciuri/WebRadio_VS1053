@@ -89,6 +89,7 @@ void StationsListState::HandleDown()
     }
     else
     {
+        
         radioListClient.SetNextStationsPage();
         GetRadioUrlsPage();
         currentStationIndex = 0;

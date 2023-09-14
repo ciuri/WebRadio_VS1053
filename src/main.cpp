@@ -48,7 +48,7 @@ void setup()
   StartAudioPlayTask();
   display.begin();
   currentState = selectModeState.EnterState(MODE_SELECT);
-  xTaskCreate(HandleLoop, "HandleLoop", 4000, NULL, 3, NULL);
+  xTaskCreate(HandleLoop, "HandleLoop", 6000, NULL, 3, NULL);
 }
 
 

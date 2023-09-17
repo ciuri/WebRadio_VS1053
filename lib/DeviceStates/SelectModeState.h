@@ -32,7 +32,7 @@ UIState SelectModeState::EnterState(UIState lastState)
     modes.clear();
 
     SearchModeDTO byCountry;
-    byCountry.name = "Select by coutry";
+    byCountry.name = "Select by country";
     byCountry.selectBy = COUNTRY;
 
     SearchModeDTO byTag;

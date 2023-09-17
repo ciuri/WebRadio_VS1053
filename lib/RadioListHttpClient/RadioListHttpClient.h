@@ -132,11 +132,13 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByCountry()
         if (url_s.find(".m3u") != std::string::npos)
             continue;
         const char *name = item["name"];
+        const char *country = item["country"];
         int bitrate = item["bitrate"];
         RadioStationDTO rs;
         rs.Name = name;
         rs.Bitrate = bitrate;
         rs.Url = url;
+        rs.Country = country;
         outList.push_back(rs);
         Serial.println(rs.Name);
     }
@@ -161,11 +163,13 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByTag()
         if (url_s.find(".m3u") != std::string::npos)
             continue;
         const char *name = item["name"];
+        const char *country = item["country"];
         int bitrate = item["bitrate"];
         RadioStationDTO rs;
         rs.Name = name;
         rs.Bitrate = bitrate;
         rs.Url = url;
+        rs.Country = country;
         outList.push_back(rs);
         Serial.println(rs.Name);
     }

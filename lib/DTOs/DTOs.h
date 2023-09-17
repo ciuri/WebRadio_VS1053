@@ -9,6 +9,7 @@ public:
     String  Url;
     int  Bitrate;
     String  RadioFrequency;
+    String Country;
 };
 
 class CountryDTO

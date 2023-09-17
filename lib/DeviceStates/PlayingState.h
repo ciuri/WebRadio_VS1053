@@ -64,9 +64,11 @@ void PlayingState::HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
     do
     {        
         display->setFont(GetFontForLength(currentStation.Name.length()));    
-        display->setCursor(0, 30);
+        display->setCursor(0, 20);
         display->printf(currentStation.Name.c_str());
         display->setFont(u8g2_font_tiny5_tf);
+        display->setCursor(0,30);
+        display->printf(currentStation.Country.c_str());
         display->setCursor(60, 60);
         display->printf("\nBuffer size: %i\n", circularBuffer.size());
         display->setCursor(0, 60);

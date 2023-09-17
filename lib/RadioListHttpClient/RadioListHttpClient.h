@@ -11,11 +11,11 @@ class RadioListHttpClient
 {
 private:
     HTTPClient httpClient;
-    int tagsPerPage = 5;
+    int tagsPerPage = 6;
     int tagsPageIndex = 0;
-    int countriesPerPage = 5;
+    int countriesPerPage = 6;
     int countriesPageIndex = 0;
-    int stationsPerPage = 10;
+    int stationsPerPage = 6;
     int stationsPageIndex = 0;
     String selectedTag;
     String selectedCountry;

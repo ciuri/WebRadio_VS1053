@@ -18,7 +18,7 @@ private:
 public:
     PlayingState(VS1053Device *vs1053);
     UIState EnterState(UIState lastState, RadioStationDTO station);
-    void HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display);
+    void HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
     void HandleUp();
     void HandleDown();
     void HandleLeft();
@@ -42,17 +42,17 @@ UIState PlayingState::EnterState(UIState lastState, RadioStationDTO station)
     return PLAY;
 }
 
-void PlayingState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
+void PlayingState::HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
 {
-    display->setFont(u8g2_font_ncenB08_tr);
+    display->setFont(u8g2_font_NokiaSmallPlain_tf);
     display->firstPage();
     do
     {
-        display->setCursor(0, 20);
+        display->setCursor(0, 10);
         display->printf(currentStation.Name.c_str());
-        display->setCursor(0, 40);
+        display->setCursor(0, 20);
         display->printf("\nBuffer size: %i\n", circularBuffer.size());
-        display->setCursor(0, 60);
+        display->setCursor(0, 30);
         display->printf("Bitrate: %i", currentStation.Bitrate);
         if (chunked)
         {

@@ -23,7 +23,7 @@ public:
 void VS1053Device::Init()
 {
     delay(3000);
-    currentVolume = VOLUME;
+    currentVolume = VOLUME;    
     SPI.begin(4, 5, 6);
     player = new VS1053(VS1053_CS, VS1053_DCS, VS1053_DREQ);
     player->begin();

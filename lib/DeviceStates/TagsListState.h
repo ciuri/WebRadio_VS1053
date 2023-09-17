@@ -13,7 +13,7 @@ private:
 
 public:
     UIState EnterState(UIState lastState);
-    void HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display);
+    void HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
     void HandleUp();
     void HandleDown();
     void HandleLeft();
@@ -39,16 +39,31 @@ UIState TagsListState::EnterState(UIState lastState)
     return SELECT_TAG;
 }
 
-void TagsListState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
+void TagsListState::HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
 {
-    display->setFont(u8g2_font_ncenB08_tr);
+    display->setFont(u8g2_font_NokiaSmallPlain_tf);
     display->firstPage();
     do
     {
-        display->setCursor(0, 20);
+         for (int i = 0; i < tags.size(); i++)
+        {
+            char rowText[120];
+            sprintf(rowText, "%s (%i)",tags[i].name.length()>20?tags[i].name.substring(0,20).c_str():tags[i].name.c_str(), tags[i].count);
+            display->setCursor(0, i * 10 + 8);
+            if (i != currentIndex)
+            {
+             display->printf(rowText);   
+            }
+            else
+            {                
+                display->drawButtonUTF8(2, i*10+8, U8G2_BTN_BW1, 120, 1, 0, rowText);
+            }
+        }
+
+        /*display->setCursor(0, 10);
         display->printf(tags[currentIndex].name.c_str());
-        display->setCursor(0, 40);
-        display->printf("Stations: %i ", tags[currentIndex].count);
+        display->setCursor(0, 20);
+        display->printf("Stations: %i ", tags[currentIndex].count);*/
     } while (display->nextPage());
 }
 

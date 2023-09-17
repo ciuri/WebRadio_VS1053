@@ -13,7 +13,7 @@ private:
 
 public:
     UIState EnterState(UIState lastState, String country, String tag, SelectBy by);
-    void HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display);
+    void HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
     void HandleUp();
     void HandleDown();
     void HandleLeft();
@@ -45,18 +45,31 @@ UIState StationsListState::EnterState(UIState lastState, String country, String 
     return SELECT_STATION;
 }
 
-void StationsListState::HandleLoop(U8G2_SH1106_128X64_NONAME_1_HW_I2C *display)
+void StationsListState::HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
 {
-    display->setFont(u8g2_font_ncenB08_tr);
+    display->setFont(u8g2_font_NokiaSmallPlain_tf);
     display->firstPage();
     do
     {
-        display->setCursor(0, 20);
-        display->printf(radioStations[currentStationIndex].Name.c_str());
-        display->setCursor(0, 40);
-        display->printf("Bitrate: %i ", radioStations[currentStationIndex].Bitrate);
-        display->setCursor(0, 60);
-        display->printf("%i", radioListClient.GetPageStartIndex() + currentStationIndex + 1);
+        for (int i = 0; i < radioStations.size(); i++)
+        {
+            display->setCursor(0, i * 10 + 8);
+            if (i != currentStationIndex)
+            {
+             display->printf(radioStations[i].Name.c_str());   
+            }
+            else
+            {
+                display->drawButtonUTF8(2, i*10+8, U8G2_BTN_BW1, 120, 1, 0, radioStations[currentStationIndex].Name.c_str());
+            }
+        }
+
+        /*  display->setCursor(0, 10);
+          display->printf(radioStations[currentStationIndex].Name.c_str());
+          display->setCursor(0, 20);
+          display->printf("Bitrate: %i ", radioStations[currentStationIndex].Bitrate);
+          display->setCursor(0, 30);
+          display->printf("%i", radioListClient.GetPageStartIndex() + currentStationIndex + 1);*/
     } while (display->nextPage());
 }
 
@@ -89,7 +102,7 @@ void StationsListState::HandleDown()
     }
     else
     {
-        
+
         radioListClient.SetNextStationsPage();
         GetRadioUrlsPage();
         currentStationIndex = 0;

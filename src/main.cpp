@@ -20,8 +20,10 @@ const char *password = "jw4hejbQpcpk";
 UIState currentState;
 VS1053Device vs1053;
 
-// U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0, U8X8_PIN_NONE, 8, 18);
-U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0);
+//U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0); //Dzialajacy
+
+//nowy - ssd1309
+U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI display(U8G2_R0,13,12,14,10,11);
 
 unsigned long lastDisplayUpdateMillis;
 PlayingState playingState(&vs1053);

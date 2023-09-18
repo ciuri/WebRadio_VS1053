@@ -58,13 +58,11 @@ static void HandleLoop(void *parameters)
 {
   while (true)
   {
-
     playingState.HandleLoop();
     stationsListState.HandleLoop();
     countriesListState.HandleLoop();
     tagsListState.HandleLoop();
     selectModeState.HandleLoop();
-
 
     if (Serial.available() > 0)
     {
@@ -78,12 +76,7 @@ static void HandleLoop(void *parameters)
         countriesListState.HandleDown();
         tagsListState.HandleDown();
         playingState.HandleDown();
-        // down
-
-        if (currentState == MODE_SELECT)
-        {
-          selectModeState.HandleDown();
-        }
+        selectModeState.HandleDown();        
       }
       if (incomingByte == 119)
       {
@@ -91,23 +84,22 @@ static void HandleLoop(void *parameters)
         countriesListState.HandleUp();
         tagsListState.HandleUp();
         selectModeState.HandleUp();
-        playingState.HandleUp();
-       
+        playingState.HandleUp();       
       }
+
       if (incomingByte == 10)
       {
         stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter();
       }
+
       if (incomingByte == 100)
       {
         stationsListState.HandleRight();
-        tagsListState.HandleRight();
-        // right
+        tagsListState.HandleRight();       
       }
 
       if (incomingByte == 97)
-      {
-        // left
+      {       
         playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack();
       }
     }

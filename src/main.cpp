@@ -31,7 +31,7 @@ PlayingState playingState(&vs1053, &currentState, &display);
 StationsListState stationsListState(&currentState, &display, &playingState);
 CountriesListState countriesListState(&currentState, &display, &stationsListState);
 TagsListState tagsListState(&currentState, &display, &stationsListState);
-SelectModeState selectModeState;
+SelectModeState selectModeState(&currentState, &display, &countriesListState,&tagsListState);
 
 static void HandleLoop(void *parameters);
 
@@ -63,9 +63,8 @@ static void HandleLoop(void *parameters)
     stationsListState.HandleLoop();
     countriesListState.HandleLoop();
     tagsListState.HandleLoop();
+    selectModeState.HandleLoop();
 
-    if (currentState == MODE_SELECT)
-      selectModeState.HandleLoop(&display);
 
     if (Serial.available() > 0)
     {
@@ -91,32 +90,13 @@ static void HandleLoop(void *parameters)
         stationsListState.HandleUp();
         countriesListState.HandleUp();
         tagsListState.HandleUp();
-        // up
-
+        selectModeState.HandleUp();
         playingState.HandleUp();
-        if (currentState == MODE_SELECT)
-        {
-          selectModeState.HandleUp();
-        }
+       
       }
       if (incomingByte == 10)
       {
-
-        switch (currentState)
-        {
-
-        case MODE_SELECT:
-        {
-          SearchModeDTO searchModeDto = selectModeState.HandleEnter();
-          if (searchModeDto.selectBy == TAG)
-            currentState = tagsListState.EnterState(currentState);
-          else
-            currentState = countriesListState.EnterState(currentState);
-          break;
-        }
-        }
-
-        stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter();
+        stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter();
       }
       if (incomingByte == 100)
       {
@@ -124,6 +104,7 @@ static void HandleLoop(void *parameters)
         tagsListState.HandleRight();
         // right
       }
+
       if (incomingByte == 97)
       {
         // left

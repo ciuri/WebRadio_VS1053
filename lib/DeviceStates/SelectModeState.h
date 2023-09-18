@@ -10,10 +10,15 @@ class SelectModeState
 {
 private:
     UIState _lastState;
+    UIState *_currentState;
+    U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
+    CountriesListState *_countriesListState;
+    TagsListState *_tagsListState;
 
 public:
+    SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState);
     UIState EnterState(UIState lastState);
-    void HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
+    void HandleLoop();
     void HandleUp();
     void HandleDown();
     void HandleLeft();
@@ -21,10 +26,18 @@ public:
     void GetTagsPage();
     vector<SearchModeDTO> modes;
     int currentIndex = 0;
- 
-    SearchModeDTO HandleEnter();
-    UIState HandleBack();
+
+    bool HandleEnter();
+    bool HandleBack();
 };
+
+SelectModeState::SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState)
+{
+    _currentState = currentState;
+    _display = display;
+    _countriesListState = countriesListState;
+    _tagsListState = tagsListState;
+}
 
 UIState SelectModeState::EnterState(UIState lastState)
 {
@@ -38,63 +51,80 @@ UIState SelectModeState::EnterState(UIState lastState)
     SearchModeDTO byTag;
     byTag.name = "Select by tag";
     byTag.selectBy = TAG;
-    
 
     modes.push_back(byCountry);
     modes.push_back(byTag);
     return MODE_SELECT;
 }
 
-void SelectModeState::HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
+void SelectModeState::HandleLoop()
 {
-    display->setFont(u8g2_font_NokiaSmallPlain_tf);
-    display->firstPage();
+    if (*_currentState != MODE_SELECT)
+        return;
+
+    _display->setFont(u8g2_font_NokiaSmallPlain_tf);
+    _display->firstPage();
     do
     {
-         for (int i = 0; i < modes.size(); i++)
+        for (int i = 0; i < modes.size(); i++)
         {
             char rowText[120];
             sprintf(rowText, "%s", modes[i].name.c_str());
-            display->setCursor(0, i * 10 + 8);
+            _display->setCursor(0, i * 10 + 8);
             if (i != currentIndex)
             {
-             display->printf(rowText);   
+                _display->printf(rowText);
             }
             else
-            {                
-                display->drawButtonUTF8(2, i*10+8, U8G2_BTN_BW1, 120, 1, 0, rowText);
+            {
+                _display->drawButtonUTF8(2, i * 10 + 8, U8G2_BTN_BW1, 120, 1, 0, rowText);
             }
         }
-
-        /*display->setCursor(0, 10);
-        display->printf(modes[currentIndex].name.c_str());*/
-    } while (display->nextPage());
+    } while (_display->nextPage());
 }
 
-UIState SelectModeState::HandleBack()
+bool SelectModeState::HandleBack()
 {
-    return _lastState;
+    if (*_currentState != MODE_SELECT)
+        return false;
+
+    *_currentState = _lastState;
+    return true;
 }
 
 void SelectModeState::HandleUp()
 {
+    if (*_currentState != MODE_SELECT)
+        return;
+
     if (currentIndex > 0)
     {
         currentIndex--;
-    }   
+    }
 }
 
 void SelectModeState::HandleDown()
 {
+    if (*_currentState != MODE_SELECT)
+        return;
+
     if (currentIndex < modes.size() - 1)
     {
         currentIndex++;
-    }   
+    }
 }
 
-SearchModeDTO SelectModeState::HandleEnter()
+bool SelectModeState::HandleEnter()
 {
-    return modes[currentIndex];
+    if (*_currentState != MODE_SELECT)
+        return false;
+
+    if (modes[currentIndex].selectBy == TAG)
+        *_currentState = _tagsListState->EnterState(*_currentState);
+    else
+        *_currentState = _countriesListState->EnterState(*_currentState);
+
+    return true;
 }
 
 #endif

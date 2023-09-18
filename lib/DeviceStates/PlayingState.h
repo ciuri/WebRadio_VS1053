@@ -10,6 +10,9 @@ class PlayingState
 {
 private:
     UIState _lastState;
+    UIState*  _currentState;
+    U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI* _display;
+
     RadioStationDTO currentStation;
     VS1053Device *_vs1053;
     u8g2_uint_t offset; // current offset for the scrolling text
@@ -17,20 +20,22 @@ private:
     const uint8_t* GetFontForLength(int length);
 
 public:
-    PlayingState(VS1053Device *vs1053);
+    PlayingState(VS1053Device *vs1053, UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
     UIState EnterState(UIState lastState, RadioStationDTO station);
-    void HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
+    void HandleLoop();
     void HandleUp();
     void HandleDown();
     void HandleLeft();
     void HandleRight();
-    UIState HandleEnter();
-    UIState HandleBack();
+    void HandleEnter();
+    void HandleBack();
 };
 
-PlayingState::PlayingState(VS1053Device *vs1053)
+PlayingState::PlayingState(VS1053Device *vs1053, UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
 {
     _vs1053 = vs1053;
+    _currentState = currentState;
+    _display = display;
 }
 
 UIState PlayingState::EnterState(UIState lastState, RadioStationDTO station)
@@ -55,51 +60,61 @@ const uint8_t* PlayingState::GetFontForLength(int length)
     return u8g2_font_tiny5_tf;
 }
 
-void PlayingState::HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
-{ //u8g2_font_t0_22_tf
+void PlayingState::HandleLoop()
+{ 
+    if(*_currentState!=PLAY)    
+        return;
 
-
-    
-    display->firstPage();
+    _display->firstPage();
     do
     {        
-        display->setFont(GetFontForLength(currentStation.Name.length()));    
-        display->setCursor(0, 20);
-        display->printf(currentStation.Name.c_str());
-        display->setFont(u8g2_font_tiny5_tf);
-        display->setCursor(0,30);
-        display->printf(currentStation.Country.c_str());
-        display->setCursor(60, 60);
-        display->printf("\nBuffer size: %i\n", circularBuffer.size());
-        display->setCursor(0, 60);
-        display->printf("Bitrate: %i", currentStation.Bitrate);
+        _display->setFont(GetFontForLength(currentStation.Name.length()));    
+        _display->setCursor(0, 20);
+        _display->printf(currentStation.Name.c_str());
+        _display->setFont(u8g2_font_tiny5_tf);
+        _display->setCursor(0,30);
+        _display->printf(currentStation.Country.c_str());
+        _display->setCursor(60, 60);
+        _display->printf("\nBuffer size: %i\n", circularBuffer.size());
+        _display->setCursor(0, 60);
+        _display->printf("Bitrate: %i", currentStation.Bitrate);
         if (chunked)
         {
-            display->setCursor(0, 50);
-            display->printf("Chunked");
+            _display->setCursor(0, 50);
+            _display->printf("Chunked");
         }
-    } while (display->nextPage());
+    } while (_display->nextPage());
 }
 
-UIState PlayingState::HandleBack()
-{
+void PlayingState::HandleBack()
+{ 
+    if(*_currentState!=PLAY)    
+        return;
+
     stopPlaying = true;
     WaitForState(STOPPED);
-    return _lastState;
+    *_currentState = _lastState;
 }
 
 void PlayingState::HandleUp()
 {
+     if(*_currentState!=PLAY)    
+        return;
     vs1053.VolumeUp();
 }
 
 void PlayingState::HandleDown()
 {
+     if(*_currentState!=PLAY)    
+        return;
     vs1053.VolumeDown();
 }
 
-UIState PlayingState::HandleEnter()
+void PlayingState::HandleEnter()
 {
-    return PLAY;
+     if(*_currentState!=PLAY)    
+        return;
+
+    *_currentState = PLAY;
 }
 #endif

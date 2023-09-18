@@ -20,13 +20,13 @@ const char *password = "jw4hejbQpcpk";
 UIState currentState;
 VS1053Device vs1053;
 
-//U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0); //Dzialajacy
+// U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0); //Dzialajacy
 
-//nowy - ssd1309
-U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI display(U8G2_R0,13,12,14,10,11);
+// nowy - ssd1309
+U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI display(U8G2_R0, 13, 12, 14, 10, 11);
 
 unsigned long lastDisplayUpdateMillis;
-PlayingState playingState(&vs1053);
+PlayingState playingState(&vs1053, &currentState, &display);
 StationsListState stationsListState;
 CountriesListState countriesListState;
 TagsListState tagsListState;
@@ -53,13 +53,13 @@ void setup()
   xTaskCreate(HandleLoop, "HandleLoop", 16000, NULL, 3, NULL);
 }
 
-
 static void HandleLoop(void *parameters)
 {
   while (true)
   {
-    if (currentState == PLAY)
-      playingState.HandleLoop(&display);
+
+    playingState.HandleLoop();
+
     if (currentState == SELECT_STATION)
       stationsListState.HandleLoop(&display);
     if (currentState == SELECT_COUNTRY)
@@ -106,10 +106,8 @@ static void HandleLoop(void *parameters)
         {
           selectModeState.HandleDown();
         }
-        if (currentState == PLAY)
-        {
-          playingState.HandleDown();
-        }
+
+        playingState.HandleDown();
       }
       if (incomingByte == 119)
       {
@@ -130,10 +128,8 @@ static void HandleLoop(void *parameters)
         {
           selectModeState.HandleUp();
         }
-        if (currentState == PLAY)
-        {
-          playingState.HandleUp();
-        }
+
+        playingState.HandleUp();
       }
       if (incomingByte == 10)
       {
@@ -182,6 +178,8 @@ static void HandleLoop(void *parameters)
       }
       if (incomingByte == 97)
       {
+        playingState.HandleBack();
+
         // left
         switch (currentState)
         {
@@ -198,11 +196,6 @@ static void HandleLoop(void *parameters)
         case SELECT_COUNTRY:
         {
           currentState = countriesListState.HandleBack();
-          break;
-        }
-        case PLAY:
-        {
-          currentState = playingState.HandleBack();
           break;
         }
         }

@@ -27,7 +27,7 @@ public:
     int currentStationIndex = 0;
     RadioListHttpClient radioListClient;
 
-    void HandleEnter();
+    bool HandleEnter();
     bool HandleBack();
 };
 
@@ -126,12 +126,13 @@ void StationsListState::HandleDown()
     }
 }
 
-void StationsListState::HandleEnter()
+bool StationsListState::HandleEnter()
 {
     if (*_currentState != SELECT_STATION)
-        return;
+        return false;
 
     *_currentState = _playingState->EnterState(*_currentState, radioStations[currentStationIndex]);
+    return true;
 }
 
 void StationsListState::HandleRight()

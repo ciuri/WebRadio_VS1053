@@ -10,10 +10,14 @@ class TagsListState
 {
 private:
     UIState _lastState;
+    UIState *_currentState;
+    U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
+    StationsListState *_stationsListState;
 
 public:
+    TagsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState);
     UIState EnterState(UIState lastState);
-    void HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
+    void HandleLoop();
     void HandleUp();
     void HandleDown();
     void HandleLeft();
@@ -23,57 +27,68 @@ public:
     int currentIndex = 0;
     RadioListHttpClient radioListClient;
 
-    TagDTO HandleEnter();
-    UIState HandleBack();
+    bool HandleEnter();
+    bool HandleBack();
 };
 
+TagsListState::TagsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState)
+{
+    _stationsListState = stationsListState;
+    _currentState = currentState;
+    _display = display;
+}
+
 void TagsListState::GetTagsPage()
-{    
+{
     tags = radioListClient.GetTags();
 }
 
 UIState TagsListState::EnterState(UIState lastState)
 {
-    lastState = _lastState;      
+    lastState = _lastState;
     tags = radioListClient.GetTags();
     return SELECT_TAG;
 }
 
-void TagsListState::HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
+void TagsListState::HandleLoop()
 {
-    display->setFont(u8g2_font_NokiaSmallPlain_tf);
-    display->firstPage();
+    if (*_currentState != SELECT_TAG)
+        return;
+
+    _display->setFont(u8g2_font_NokiaSmallPlain_tf);
+    _display->firstPage();
     do
     {
-         for (int i = 0; i < tags.size(); i++)
+        for (int i = 0; i < tags.size(); i++)
         {
             char rowText[120];
-            sprintf(rowText, "%s (%i)",tags[i].name.length()>20?tags[i].name.substring(0,20).c_str():tags[i].name.c_str(), tags[i].count);
-            display->setCursor(0, i * 10 + 8);
+            sprintf(rowText, "%s (%i)", tags[i].name.length() > 20 ? tags[i].name.substring(0, 20).c_str() : tags[i].name.c_str(), tags[i].count);
+            _display->setCursor(0, i * 10 + 8);
             if (i != currentIndex)
             {
-             display->printf(rowText);   
+                _display->printf(rowText);
             }
             else
-            {                
-                display->drawButtonUTF8(2, i*10+8, U8G2_BTN_BW1, 120, 1, 0, rowText);
+            {
+                _display->drawButtonUTF8(2, i * 10 + 8, U8G2_BTN_BW1, 120, 1, 0, rowText);
             }
-        }
-
-        /*display->setCursor(0, 10);
-        display->printf(tags[currentIndex].name.c_str());
-        display->setCursor(0, 20);
-        display->printf("Stations: %i ", tags[currentIndex].count);*/
-    } while (display->nextPage());
+        }       
+    } while (_display->nextPage());
 }
 
-UIState TagsListState::HandleBack()
+bool TagsListState::HandleBack()
 {
-    return _lastState;
+    if (*_currentState != SELECT_TAG)
+        return false;
+    *_currentState =  _lastState;
+    return true;
 }
 
 void TagsListState::HandleUp()
 {
+    if (*_currentState != SELECT_TAG)
+        return;
+
     if (currentIndex > 0)
     {
         currentIndex--;
@@ -88,6 +103,9 @@ void TagsListState::HandleUp()
 
 void TagsListState::HandleDown()
 {
+    if (*_currentState != SELECT_TAG)
+        return;
+
     if (currentIndex < tags.size() - 1)
     {
         currentIndex++;
@@ -100,13 +118,20 @@ void TagsListState::HandleDown()
     }
 }
 
-TagDTO TagsListState::HandleEnter()
+bool TagsListState::HandleEnter()
 {
-    return tags[currentIndex];
+    if (*_currentState != SELECT_TAG)
+        return false;
+
+    *_currentState = _stationsListState->EnterState(*_currentState, "", tags[currentIndex].name, TAG);
+    return true;
 }
 
 void TagsListState::HandleRight()
 {
+    if (*_currentState != SELECT_TAG)
+        return;
+
     radioListClient.SetNextTagsPage();
     GetTagsPage();
     currentIndex = 0;
@@ -114,6 +139,9 @@ void TagsListState::HandleRight()
 
 void TagsListState::HandleLeft()
 {
+    if (*_currentState != SELECT_TAG)
+        return;
+
     radioListClient.SetPrevTagsPage();
     GetTagsPage();
     currentIndex = 0;

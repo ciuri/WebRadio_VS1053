@@ -26,10 +26,11 @@ VS1053Device vs1053;
 U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI display(U8G2_R0, 13, 12, 14, 10, 11);
 
 unsigned long lastDisplayUpdateMillis;
+
 PlayingState playingState(&vs1053, &currentState, &display);
 StationsListState stationsListState(&currentState, &display, &playingState);
-CountriesListState countriesListState;
-TagsListState tagsListState;
+CountriesListState countriesListState(&currentState, &display, &stationsListState);
+TagsListState tagsListState(&currentState, &display, &stationsListState);
 SelectModeState selectModeState;
 
 static void HandleLoop(void *parameters);
@@ -58,13 +59,11 @@ static void HandleLoop(void *parameters)
   while (true)
   {
 
-    playingState.HandleLoop();    
+    playingState.HandleLoop();
     stationsListState.HandleLoop();
+    countriesListState.HandleLoop();
+    tagsListState.HandleLoop();
 
-    if (currentState == SELECT_COUNTRY)
-      countriesListState.HandleLoop(&display);
-    if (currentState == SELECT_TAG)
-      tagsListState.HandleLoop(&display);
     if (currentState == MODE_SELECT)
       selectModeState.HandleLoop(&display);
 
@@ -74,67 +73,38 @@ static void HandleLoop(void *parameters)
       Serial.print("I received: ");
       Serial.println(incomingByte, DEC);
 
-      
       if (incomingByte == 115)
       {
         stationsListState.HandleDown();
-
+        countriesListState.HandleDown();
+        tagsListState.HandleDown();
+        playingState.HandleDown();
         // down
-        if (currentState == SELECT_COUNTRY)
-        {
-          countriesListState.HandleDown();
-        }       
-
-        if (currentState == SELECT_TAG)
-        {
-          tagsListState.HandleDown();
-        }
 
         if (currentState == MODE_SELECT)
         {
           selectModeState.HandleDown();
         }
-
-        playingState.HandleDown();
       }
       if (incomingByte == 119)
       {
         stationsListState.HandleUp();
+        countriesListState.HandleUp();
+        tagsListState.HandleUp();
         // up
-        if (currentState == SELECT_COUNTRY)
-        {
-          countriesListState.HandleUp();
-        }       
-        if (currentState == SELECT_TAG)
-        {
-          tagsListState.HandleUp();
-        }
+
+        playingState.HandleUp();
         if (currentState == MODE_SELECT)
         {
           selectModeState.HandleUp();
         }
-
-        playingState.HandleUp();
       }
       if (incomingByte == 10)
       {
-        stationsListState.HandleEnter();
 
         switch (currentState)
         {
-        case SELECT_COUNTRY:
-        {
-          CountryDTO countryDto = countriesListState.HandleEnter();
-          currentState = stationsListState.EnterState(currentState, countryDto.code, "", COUNTRY);
-          break;
-        }
-        
-        case SELECT_TAG:
-        {
-          TagDTO tagDto = tagsListState.HandleEnter();
-          currentState = stationsListState.EnterState(currentState, "", tagDto.name, TAG);
-          break;
-        }
+
         case MODE_SELECT:
         {
           SearchModeDTO searchModeDto = selectModeState.HandleEnter();
@@ -145,37 +115,19 @@ static void HandleLoop(void *parameters)
           break;
         }
         }
+
+        stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter();
       }
       if (incomingByte == 100)
       {
         stationsListState.HandleRight();
-
+        tagsListState.HandleRight();
         // right
-        if (currentState == SELECT_TAG)
-        {
-          tagsListState.HandleRight();
-        }
       }
       if (incomingByte == 97)
       {
         // left
-
-        switch (currentState)
-        {        
-          case SELECT_TAG:
-          {
-            currentState = tagsListState.HandleBack();
-            break;
-          }
-          case SELECT_COUNTRY:
-          {
-            currentState = countriesListState.HandleBack();
-            break;
-          }
-        }
-
-        playingState.HandleBack() || stationsListState.HandleBack();       
-        
+        playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack();
       }
     }
   }

@@ -10,10 +10,14 @@ class StationsListState
 {
 private:
     UIState _lastState;
+    UIState *_currentState;
+    U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
+    PlayingState *_playingState;
 
 public:
+    StationsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState);
     UIState EnterState(UIState lastState, String country, String tag, SelectBy by);
-    void HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
+    void HandleLoop();
     void HandleUp();
     void HandleDown();
     void HandleLeft();
@@ -23,9 +27,16 @@ public:
     int currentStationIndex = 0;
     RadioListHttpClient radioListClient;
 
-    RadioStationDTO HandleEnter();
-    UIState HandleBack();
+    void HandleEnter();
+    bool HandleBack();
 };
+
+StationsListState::StationsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState)
+{
+    _currentState = currentState;
+    _display = display;
+    _playingState = playingState;
+}
 
 void StationsListState::GetRadioUrlsPage()
 {
@@ -45,41 +56,44 @@ UIState StationsListState::EnterState(UIState lastState, String country, String 
     return SELECT_STATION;
 }
 
-void StationsListState::HandleLoop(U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
+void StationsListState::HandleLoop()
 {
-    display->setFont(u8g2_font_NokiaSmallPlain_tf);
-    display->firstPage();
+    if (*_currentState != SELECT_STATION)
+        return;
+
+    _display->setFont(u8g2_font_NokiaSmallPlain_tf);
+    _display->firstPage();
     do
     {
         for (int i = 0; i < radioStations.size(); i++)
         {
-            display->setCursor(0, i * 10 + 8);
+            _display->setCursor(0, i * 10 + 8);
             if (i != currentStationIndex)
             {
-             display->printf(radioStations[i].Name.c_str());   
+                _display->printf(radioStations[i].Name.c_str());
             }
             else
             {
-                display->drawButtonUTF8(2, i*10+8, U8G2_BTN_BW1, 120, 1, 0, radioStations[currentStationIndex].Name.c_str());
+                _display->drawButtonUTF8(2, i * 10 + 8, U8G2_BTN_BW1, 120, 1, 0, radioStations[currentStationIndex].Name.c_str());
             }
         }
-
-        /*  display->setCursor(0, 10);
-          display->printf(radioStations[currentStationIndex].Name.c_str());
-          display->setCursor(0, 20);
-          display->printf("Bitrate: %i ", radioStations[currentStationIndex].Bitrate);
-          display->setCursor(0, 30);
-          display->printf("%i", radioListClient.GetPageStartIndex() + currentStationIndex + 1);*/
-    } while (display->nextPage());
+    } while (_display->nextPage());
 }
 
-UIState StationsListState::HandleBack()
+bool StationsListState::HandleBack()
 {
-    return _lastState;
+    if (*_currentState != SELECT_STATION)
+        return false;
+
+    *_currentState = _lastState;
+    return true;
 }
 
 void StationsListState::HandleUp()
 {
+    if (*_currentState != SELECT_STATION)
+        return;
+
     if (currentStationIndex > 0)
     {
         currentStationIndex--;
@@ -95,6 +109,9 @@ void StationsListState::HandleUp()
 
 void StationsListState::HandleDown()
 {
+    if (*_currentState != SELECT_STATION)
+        return;
+
     if (currentStationIndex < radioStations.size() - 1)
     {
         currentStationIndex++;
@@ -109,13 +126,19 @@ void StationsListState::HandleDown()
     }
 }
 
-RadioStationDTO StationsListState::HandleEnter()
+void StationsListState::HandleEnter()
 {
-    return radioStations[currentStationIndex];
+    if (*_currentState != SELECT_STATION)
+        return;
+
+    *_currentState = _playingState->EnterState(*_currentState, radioStations[currentStationIndex]);
 }
 
 void StationsListState::HandleRight()
 {
+    if (*_currentState != SELECT_STATION)
+        return;
+
     radioListClient.SetNextStationsPage();
     GetRadioUrlsPage();
     currentStationIndex = 0;
@@ -123,6 +146,9 @@ void StationsListState::HandleRight()
 
 void StationsListState::HandleLeft()
 {
+    if (*_currentState != SELECT_STATION)
+        return;
+
     radioListClient.SetPrevStationsPage();
     GetRadioUrlsPage();
     currentStationIndex = 0;

@@ -28,7 +28,7 @@ public:
     void HandleLeft();
     void HandleRight();
     void HandleEnter();
-    void HandleBack();
+    bool HandleBack();
 };
 
 PlayingState::PlayingState(VS1053Device *vs1053, UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
@@ -86,14 +86,15 @@ void PlayingState::HandleLoop()
     } while (_display->nextPage());
 }
 
-void PlayingState::HandleBack()
+bool PlayingState::HandleBack()
 { 
     if(*_currentState!=PLAY)    
-        return;
+        return false;
 
     stopPlaying = true;
     WaitForState(STOPPED);
     *_currentState = _lastState;
+    return true;
 }
 
 void PlayingState::HandleUp()

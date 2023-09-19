@@ -120,9 +120,9 @@ bool SelectModeState::HandleEnter()
         return false;
 
     if (modes[currentIndex].selectBy == TAG)
-        *_currentState = _tagsListState->EnterState(*_currentState);
+        *_currentState = _tagsListState->EnterState(MODE_SELECT);
     else
-        *_currentState = _countriesListState->EnterState(*_currentState);
+        *_currentState = _countriesListState->EnterState(MODE_SELECT);
 
     return true;
 }

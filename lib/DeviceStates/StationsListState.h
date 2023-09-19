@@ -131,7 +131,7 @@ bool StationsListState::HandleEnter()
     if (*_currentState != SELECT_STATION)
         return false;
 
-    *_currentState = _playingState->EnterState(*_currentState, radioStations[currentStationIndex]);
+    *_currentState = _playingState->EnterState(SELECT_STATION, radioStations[currentStationIndex]);
     return true;
 }
 

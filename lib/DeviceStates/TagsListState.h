@@ -123,7 +123,7 @@ bool TagsListState::HandleEnter()
     if (*_currentState != SELECT_TAG)
         return false;
 
-    *_currentState = _stationsListState->EnterState(*_currentState, "", tags[currentIndex].name, TAG);
+    *_currentState = _stationsListState->EnterState(SELECT_TAG, "", tags[currentIndex].name, TAG);
     return true;
 }
 

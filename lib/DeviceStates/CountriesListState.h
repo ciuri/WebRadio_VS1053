@@ -129,7 +129,7 @@ bool CountriesListState::HandleEnter()
     if (*_currentState != SELECT_COUNTRY)
         return false;
 
-    *_currentState = _stationsListState->EnterState(*_currentState, countries[currentIndex].code, "", COUNTRY);
+    *_currentState = _stationsListState->EnterState(SELECT_COUNTRY, countries[currentIndex].code, "", COUNTRY);
     return true;
 }
 

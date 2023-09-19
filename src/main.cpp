@@ -13,12 +13,13 @@
 #include <CountriesListState.h>
 #include <TagsListState.h>
 #include <SelectModeState.h>
-
-const char *ssid = "UPC97C7D2D";
-const char *password = "jw4hejbQpcpk";
+#include <DeviceStartState.h>
 
 UIState currentState;
 VS1053Device vs1053;
+DeviceStartStage _startStage = WIFI;
+
+
 
 // U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0); //Dzialajacy
 
@@ -31,38 +32,30 @@ PlayingState playingState(&vs1053, &currentState, &display);
 StationsListState stationsListState(&currentState, &display, &playingState);
 CountriesListState countriesListState(&currentState, &display, &stationsListState);
 TagsListState tagsListState(&currentState, &display, &stationsListState);
-SelectModeState selectModeState(&currentState, &display, &countriesListState,&tagsListState);
+SelectModeState selectModeState(&currentState, &display, &countriesListState, &tagsListState);
+DeviceStartState deviceStartState(&currentState, &display, &selectModeState);
 
 static void HandleLoop(void *parameters);
 
 void setup()
 {
-  esp_task_wdt_init(30, false);
-  Serial.begin(115200);
-  Serial.print("Wifi connecting...");
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("Wifi connected.");
-  vs1053.Init();
-  StartAudioPlayTask();
   display.begin();
-  currentState = selectModeState.EnterState(MODE_SELECT);
   xTaskCreate(HandleLoop, "HandleLoop", 16000, NULL, 3, NULL);
+  currentState = deviceStartState.EnterState();
+  esp_task_wdt_init(30, false); 
 }
 
 static void HandleLoop(void *parameters)
 {
   while (true)
   {
+    delay(10);
     playingState.HandleLoop();
     stationsListState.HandleLoop();
     countriesListState.HandleLoop();
     tagsListState.HandleLoop();
     selectModeState.HandleLoop();
+    deviceStartState.HandleLoop();
 
     if (Serial.available() > 0)
     {
@@ -76,7 +69,7 @@ static void HandleLoop(void *parameters)
         countriesListState.HandleDown();
         tagsListState.HandleDown();
         playingState.HandleDown();
-        selectModeState.HandleDown();        
+        selectModeState.HandleDown();
       }
       if (incomingByte == 119)
       {
@@ -84,7 +77,7 @@ static void HandleLoop(void *parameters)
         countriesListState.HandleUp();
         tagsListState.HandleUp();
         selectModeState.HandleUp();
-        playingState.HandleUp();       
+        playingState.HandleUp();
       }
 
       if (incomingByte == 10)
@@ -95,11 +88,11 @@ static void HandleLoop(void *parameters)
       if (incomingByte == 100)
       {
         stationsListState.HandleRight();
-        tagsListState.HandleRight();       
+        tagsListState.HandleRight();
       }
 
       if (incomingByte == 97)
-      {       
+      {
         playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack();
       }
     }

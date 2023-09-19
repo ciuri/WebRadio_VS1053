@@ -47,9 +47,14 @@ enum UIState
     SELECT_TAG,
     SELECT_COUNTRY,
     SELECT_STATION,
-    PLAY
+    PLAY,
+    DEVICE_START
 };
 
-
+enum DeviceStartStage
+{
+    WIFI,
+    AUDIO
+};
 
 #endif

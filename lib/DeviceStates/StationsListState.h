@@ -40,7 +40,7 @@ StationsListState::StationsListState(UIState *currentState, U8G2_SSD1309_128X64_
 
 void StationsListState::GetRadioUrlsPage()
 {
-    radioStations = radioListClient.GetRadioURLs(*_currentState);
+    radioStations = radioListClient.GetRadioURLs(_lastState);
 }
 
 UIState StationsListState::EnterState(UIState lastState, String country, String tag)

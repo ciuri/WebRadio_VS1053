@@ -25,7 +25,7 @@ public:
     vector<CountryDTO> GetCountries();
     vector<RadioStationDTO> GetRadioURLsByCountry();
     vector<RadioStationDTO> GetRadioURLsByTag();
-    vector<RadioStationDTO> GetRadioURLs(UIState currentState);
+    vector<RadioStationDTO> GetRadioURLs(UIState state);
     void ResetStationsPageIndex();
     void SetCountry(String country);
     void SetTag(String tag);
@@ -48,9 +48,10 @@ int RadioListHttpClient::GetPageStartIndex()
     return stationsPageIndex * stationsPerPage;
 }
 
-vector<RadioStationDTO> RadioListHttpClient::GetRadioURLs(UIState currentState)
-{
-    switch (currentState)
+vector<RadioStationDTO> RadioListHttpClient::GetRadioURLs(UIState state)
+{    
+    Serial.println(state);
+    switch (state)
     {
     case SELECT_TAG:
         return GetRadioURLsByTag();
@@ -59,7 +60,7 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLs(UIState currentState)
         return GetRadioURLsByCountry();
         break;
     }
-    return GetRadioURLsByCountry(); // default
+ //   return GetRadioURLsByCountry(); // default
 }
 
 vector<TagDTO> RadioListHttpClient::GetTags()

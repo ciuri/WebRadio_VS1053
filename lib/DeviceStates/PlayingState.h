@@ -101,14 +101,14 @@ void PlayingState::HandleUp()
 {
      if(*_currentState!=PLAY)    
         return;
-    vs1053.VolumeUp();
+    vs1053.VolumeDown();
 }
 
 void PlayingState::HandleDown()
 {
      if(*_currentState!=PLAY)    
         return;
-    vs1053.VolumeDown();
+    vs1053.VolumeUp();
 }
 
 void PlayingState::HandleEnter()

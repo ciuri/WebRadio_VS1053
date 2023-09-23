@@ -36,7 +36,7 @@ void VS1053Device::VolumeUp()
 {
     if(currentVolume>=100)
         return;
-    currentVolume+=10;
+    currentVolume+=5;
     player->setVolume(currentVolume);
 }
 
@@ -44,7 +44,7 @@ void VS1053Device::VolumeDown()
 {
     if(currentVolume<=0)
         return;
-    currentVolume-=10;
+    currentVolume-=5;
     player->setVolume(currentVolume);
 }
 

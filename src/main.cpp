@@ -19,8 +19,6 @@ UIState currentState;
 VS1053Device vs1053;
 DeviceStartStage _startStage = WIFI;
 
-
-
 // U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0); //Dzialajacy
 
 // nowy - ssd1309
@@ -35,6 +33,14 @@ TagsListState tagsListState(&currentState, &display, &stationsListState);
 SelectModeState selectModeState(&currentState, &display, &countriesListState, &tagsListState);
 DeviceStartState deviceStartState(&currentState, &display, &selectModeState);
 
+void HandleUp();
+void HandleDown();
+void HandleLeft();
+void HandleRight();
+void HandleEnter();
+void HandleBack();
+void HandleLoops();
+
 static void HandleLoop(void *parameters);
 
 void setup()
@@ -42,7 +48,51 @@ void setup()
   display.begin();
   xTaskCreate(HandleLoop, "HandleLoop", 16000, NULL, 3, NULL);
   currentState = deviceStartState.EnterState();
-  esp_task_wdt_init(30, false); 
+  esp_task_wdt_init(30, false);
+}
+
+void HandleLoops()
+{
+  playingState.HandleLoop();
+  stationsListState.HandleLoop();
+  countriesListState.HandleLoop();
+  tagsListState.HandleLoop();
+  selectModeState.HandleLoop();
+  deviceStartState.HandleLoop();
+}
+
+void HandleDown()
+{
+  stationsListState.HandleDown();
+  countriesListState.HandleDown();
+  tagsListState.HandleDown();
+  playingState.HandleDown();
+  selectModeState.HandleDown();
+}
+
+void HandleUp()
+{
+  stationsListState.HandleUp();
+  countriesListState.HandleUp();
+  tagsListState.HandleUp();
+  selectModeState.HandleUp();
+  playingState.HandleUp();
+}
+
+void HandleEnter()
+{
+  stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter();
+}
+
+void HandleRight()
+{
+  stationsListState.HandleRight();
+  tagsListState.HandleRight();
+}
+
+void HandleBack()
+{
+  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack();
 }
 
 static void HandleLoop(void *parameters)
@@ -50,12 +100,7 @@ static void HandleLoop(void *parameters)
   while (true)
   {
     delay(10);
-    playingState.HandleLoop();
-    stationsListState.HandleLoop();
-    countriesListState.HandleLoop();
-    tagsListState.HandleLoop();
-    selectModeState.HandleLoop();
-    deviceStartState.HandleLoop();
+    HandleLoops();
 
     if (Serial.available() > 0)
     {
@@ -65,35 +110,26 @@ static void HandleLoop(void *parameters)
 
       if (incomingByte == 115)
       {
-        stationsListState.HandleDown();
-        countriesListState.HandleDown();
-        tagsListState.HandleDown();
-        playingState.HandleDown();
-        selectModeState.HandleDown();
+        HandleDown();
       }
       if (incomingByte == 119)
       {
-        stationsListState.HandleUp();
-        countriesListState.HandleUp();
-        tagsListState.HandleUp();
-        selectModeState.HandleUp();
-        playingState.HandleUp();
+        HandleUp();
       }
 
       if (incomingByte == 10)
       {
-        stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter();
+        HandleEnter();
       }
 
       if (incomingByte == 100)
       {
-        stationsListState.HandleRight();
-        tagsListState.HandleRight();
+        HandleRight();
       }
 
       if (incomingByte == 97)
       {
-        playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack();
+        HandleBack();
       }
     }
   }

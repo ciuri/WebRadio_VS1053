@@ -61,7 +61,7 @@ void StationsListState::HandleLoop()
     if (*_currentState != SELECT_STATION)
         return;
 
-    _display->setFont(u8g2_font_NokiaSmallPlain_tf);
+    _display->setFont(u8g2_font_NokiaSmallPlain_tf);  
     _display->firstPage();
     do
     {

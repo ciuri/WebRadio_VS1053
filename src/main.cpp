@@ -14,10 +14,17 @@
 #include <TagsListState.h>
 #include <SelectModeState.h>
 #include <DeviceStartState.h>
+#include <AiEsp32RotaryEncoder.h>
+
+#define ROTARY_ENCODER_A_PIN 42
+#define ROTARY_ENCODER_B_PIN 2
+#define ROTARY_ENCODER_BUTTON_PIN 1
+#define ROTARY_ENCODER_STEPS 4
 
 UIState currentState;
 VS1053Device vs1053;
 DeviceStartStage _startStage = WIFI;
+AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
 
 // U8G2_SH1106_128X64_NONAME_1_HW_I2C display(U8G2_R0); //Dzialajacy
 
@@ -41,10 +48,20 @@ void HandleEnter();
 void HandleBack();
 void HandleLoops();
 
+void IRAM_ATTR readEncoderISR()
+{
+  rotaryEncoder.readEncoder_ISR();
+}
+
 static void HandleLoop(void *parameters);
 
 void setup()
 {
+  rotaryEncoder.begin();
+  rotaryEncoder.setup(readEncoderISR);
+  rotaryEncoder.setBoundaries(0, 1000, true); 
+  rotaryEncoder.setAcceleration(250);
+
   display.begin();
   xTaskCreate(HandleLoop, "HandleLoop", 16000, NULL, 3, NULL);
   currentState = deviceStartState.EnterState();
@@ -95,6 +112,51 @@ void HandleBack()
   playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack();
 }
 
+
+unsigned long shortPressAfterMiliseconds = 50;   //how long short press shoud be. Do not set too low to avoid bouncing (false press events).
+unsigned long longPressAfterMiliseconds = 1000;  //how long čong press shoud be.
+
+
+void on_button_short_click() {
+  HandleEnter();
+}
+
+void on_button_long_click() {
+  HandleBack();
+}
+
+void handle_rotary_button() {
+  static unsigned long lastTimeButtonDown = 0;
+  static bool wasButtonDown = false;
+
+  bool isEncoderButtonDown = rotaryEncoder.isEncoderButtonDown();
+  //isEncoderButtonDown = !isEncoderButtonDown; //uncomment this line if your button is reversed
+
+  if (isEncoderButtonDown) {
+    Serial.print("+");  //REMOVE THIS LINE IF YOU DONT WANT TO SEE
+    if (!wasButtonDown) {
+      //start measuring
+      lastTimeButtonDown = millis();
+    }
+    //else we wait since button is still down
+    wasButtonDown = true;
+    return;
+  }
+
+  //button is up
+  if (wasButtonDown) {
+    Serial.println("");  //REMOVE THIS LINE IF YOU DONT WANT TO SEE
+    //click happened, lets see if it was short click, long click or just too short
+    if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
+      on_button_long_click();
+    } else if (millis() - lastTimeButtonDown >= shortPressAfterMiliseconds) {
+      on_button_short_click();
+    }
+  }
+  wasButtonDown = false;
+}
+
+
 static void HandleLoop(void *parameters)
 {
   while (true)
@@ -132,6 +194,17 @@ static void HandleLoop(void *parameters)
         HandleBack();
       }
     }
+
+    int encoderChanged = rotaryEncoder.encoderChanged();
+     if (encoderChanged)
+    {                       
+        if(encoderChanged<0)
+          HandleDown();
+        if(encoderChanged>0)
+          HandleUp();        
+
+    }
+    handle_rotary_button();
   }
 }
 

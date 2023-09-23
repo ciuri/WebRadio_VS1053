@@ -24,7 +24,7 @@ public:
     void HandleLeft();
     void HandleRight();
     void GetTagsPage();
-    vector<SearchModeDTO> modes;
+    vector<NamedModeDTO> modes;
     int currentIndex = 0;
 
     bool HandleEnter();
@@ -44,13 +44,13 @@ UIState SelectModeState::EnterState(UIState lastState)
     _lastState = lastState;
     modes.clear();
 
-    SearchModeDTO byCountry;
+    NamedModeDTO byCountry;
     byCountry.name = "Select by country";
-    byCountry.selectBy = COUNTRY;
+    byCountry.state = SELECT_COUNTRY;
 
-    SearchModeDTO byTag;
+    NamedModeDTO byTag;
     byTag.name = "Select by tag";
-    byTag.selectBy = TAG;
+    byTag.state = SELECT_TAG;
 
     modes.push_back(byCountry);
     modes.push_back(byTag);
@@ -119,10 +119,15 @@ bool SelectModeState::HandleEnter()
     if (*_currentState != MODE_SELECT)
         return false;
 
-    if (modes[currentIndex].selectBy == TAG)
+    switch (modes[currentIndex].state)
+    {
+    case SELECT_TAG:
         *_currentState = _tagsListState->EnterState(MODE_SELECT);
-    else
+        break;
+    case SELECT_COUNTRY:
         *_currentState = _countriesListState->EnterState(MODE_SELECT);
+        break;
+    }
 
     return true;
 }

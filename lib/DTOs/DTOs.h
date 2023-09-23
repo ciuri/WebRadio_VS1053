@@ -27,20 +27,6 @@ class TagDTO
     int count;
 };
 
-enum SelectBy
-{
-    TAG,
-    COUNTRY,
-    NAME
-};
-
-class SearchModeDTO
-{
-    public:
-    String name;
-    SelectBy selectBy;
-};
-
 enum UIState
 {
     MODE_SELECT,
@@ -48,8 +34,18 @@ enum UIState
     SELECT_COUNTRY,
     SELECT_STATION,
     PLAY,
-    DEVICE_START
+    DEVICE_START,
+    SELECT_SETTINGS
 };
+
+class NamedModeDTO
+{
+    public:
+    String name;
+    UIState state;
+};
+
+
 
 enum DeviceStartStage
 {

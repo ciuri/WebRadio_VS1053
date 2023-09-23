@@ -26,7 +26,7 @@ public:
     void HandleLeft();
     void HandleRight();
     void GetTagsPage();
-    vector<SearchModeDTO> modes;
+    vector<NamedModeDTO> modes;
     int currentIndex = 0;
 
     bool HandleEnter();

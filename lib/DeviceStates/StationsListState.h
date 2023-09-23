@@ -16,7 +16,7 @@ private:
 
 public:
     StationsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState);
-    UIState EnterState(UIState lastState, String country, String tag, SelectBy by);
+    UIState EnterState(UIState lastState, String country, String tag);
     void HandleLoop();
     void HandleUp();
     void HandleDown();
@@ -40,18 +40,17 @@ StationsListState::StationsListState(UIState *currentState, U8G2_SSD1309_128X64_
 
 void StationsListState::GetRadioUrlsPage()
 {
-    radioStations = radioListClient.GetRadioURLs();
+    radioStations = radioListClient.GetRadioURLs(*_currentState);
 }
 
-UIState StationsListState::EnterState(UIState lastState, String country, String tag, SelectBy by)
+UIState StationsListState::EnterState(UIState lastState, String country, String tag)
 {
     _lastState = lastState;
     currentStationIndex = 0;
     radioListClient.ResetStationsPageIndex();
     radioListClient.SetCountry(country);
-    radioListClient.SetTag(tag);
-    radioListClient.SetSelectBy(by);
-    radioStations = radioListClient.GetRadioURLs();
+    radioListClient.SetTag(tag);   
+    radioStations = radioListClient.GetRadioURLs(_lastState);
 
     return SELECT_STATION;
 }

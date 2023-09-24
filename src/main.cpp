@@ -114,7 +114,7 @@ void HandleBack()
 
 
 unsigned long shortPressAfterMiliseconds = 50;   //how long short press shoud be. Do not set too low to avoid bouncing (false press events).
-unsigned long longPressAfterMiliseconds = 1000;  //how long čong press shoud be.
+unsigned long longPressAfterMiliseconds = 350;  //how long čong press shoud be.
 
 
 void on_button_short_click() {

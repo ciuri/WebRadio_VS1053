@@ -1,10 +1,14 @@
 #ifndef SELECTMODESTATE_H
 #define SELECTMODESTATE_H
 
+#define LIST_START_OFFSET 20
+
 #include <HttpWebRadioClient.h>
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <DTOs.h>
+
+
 
 class SelectModeState
 {
@@ -52,8 +56,14 @@ UIState SelectModeState::EnterState(UIState lastState)
     byTag.name = "Select by tag";
     byTag.state = SELECT_TAG;
 
+    NamedModeDTO settings;
+    settings.name = "Settings";
+    settings.state = SELECT_SETTINGS;
+
+
     modes.push_back(byCountry);
     modes.push_back(byTag);
+    modes.push_back(settings);
     return MODE_SELECT;
 }
 
@@ -65,19 +75,22 @@ void SelectModeState::HandleLoop()
     _display->setFont(u8g2_font_NokiaSmallPlain_tf);
     _display->firstPage();
     do
-    {
+    { 
+         _display->setCursor(40,8);
+        _display->printf("MAIN MENU");
+    
         for (int i = 0; i < modes.size(); i++)
         {
             char rowText[120];
             sprintf(rowText, "%s", modes[i].name.c_str());
-            _display->setCursor(0, i * 10 + 8);
+            _display->setCursor(0, i * 10 + LIST_START_OFFSET);
             if (i != currentIndex)
             {
                 _display->printf(rowText);
             }
             else
             {
-                _display->drawButtonUTF8(2, i * 10 + 8, U8G2_BTN_BW1, 120, 1, 0, rowText);
+                _display->drawButtonUTF8(2, i * 10 + LIST_START_OFFSET, U8G2_BTN_BW1, 120, 1, 0, rowText);
             }
         }
     } while (_display->nextPage());

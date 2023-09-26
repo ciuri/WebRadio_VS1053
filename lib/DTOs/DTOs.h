@@ -37,7 +37,7 @@ enum UIState
     DEVICE_START,
     SELECT_SETTINGS,
     SELECT_SERVER_SETTING,
-    
+    SELECT_WIFI_SETTING    
 };
 
 class NamedModeDTO

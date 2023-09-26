@@ -8,6 +8,7 @@
 #include <U8g2lib.h>
 #include <DTOs.h>
 #include <SelectServerState.h>
+#include <WiFiListState.h>
 
 class SelectSettingsState
 {
@@ -18,9 +19,10 @@ private:
     CountriesListState *_countriesListState;
     TagsListState *_tagsListState;
     SelectServerState *_selectServerState;
+    WiFiListState *_wifiListState;
 
 public:
-    SelectSettingsState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectServerState *selectServerState);
+    SelectSettingsState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectServerState *selectServerState, WiFiListState *wifiListState);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -35,13 +37,14 @@ public:
     bool HandleBack();
 };
 
-SelectSettingsState::SelectSettingsState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectServerState *selectServerState)
+SelectSettingsState::SelectSettingsState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectServerState *selectServerState, WiFiListState *wifiListState)
 {
     _currentState = currentState;
     _display = display;
     _countriesListState = countriesListState;
     _tagsListState = tagsListState;
     _selectServerState = selectServerState;
+    _wifiListState = wifiListState;
 }
 
 UIState SelectSettingsState::EnterState(UIState lastState)
@@ -55,7 +58,7 @@ UIState SelectSettingsState::EnterState(UIState lastState)
 
     NamedModeDTO wifi;
     wifi.name = "WiFi settings";
-    wifi.state = SELECT_TAG;
+    wifi.state = SELECT_WIFI_SETTING;
 
     modes.push_back(servers);
     modes.push_back(wifi);
@@ -132,6 +135,8 @@ bool SelectSettingsState::HandleEnter()
     case SELECT_SERVER_SETTING:
         *_currentState = _selectServerState->EnterState(SELECT_SETTINGS);
         break;
+    case SELECT_WIFI_SETTING:
+        *_currentState = _wifiListState->EnterState(SELECT_SETTINGS);
     }
 
     return true;

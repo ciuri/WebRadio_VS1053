@@ -17,6 +17,7 @@
 #include <AiEsp32RotaryEncoder.h>
 #include <SelectSettingsState.h>
 #include <SelectServerState.h>
+#include <WiFiListState.h>
 
 #define ROTARY_ENCODER_A_PIN 42
 #define ROTARY_ENCODER_B_PIN 2
@@ -40,10 +41,10 @@ StationsListState stationsListState(&currentState, &display, &playingState);
 CountriesListState countriesListState(&currentState, &display, &stationsListState);
 TagsListState tagsListState(&currentState, &display, &stationsListState);
 SelectServerState selectServerState(&currentState, &display);
-SelectSettingsState selectSettingsState(&currentState, &display, &countriesListState, &tagsListState, &selectServerState);
+WiFiListState wifiListState(&currentState, &display);
+SelectSettingsState selectSettingsState(&currentState, &display, &countriesListState, &tagsListState, &selectServerState, &wifiListState);
 SelectModeState selectModeState(&currentState, &display, &countriesListState, &tagsListState, &selectSettingsState);
 DeviceStartState deviceStartState(&currentState, &display, &selectModeState);
-
 
 void HandleUp();
 void HandleDown();
@@ -83,6 +84,8 @@ void HandleLoops()
   deviceStartState.HandleLoop();
   selectSettingsState.HandleLoop();
   selectServerState.HandleLoop();
+  wifiListState.HandleLoop();
+  
 }
 
 void HandleDown()
@@ -94,6 +97,7 @@ void HandleDown()
   selectModeState.HandleDown();
   selectSettingsState.HandleDown();
   selectServerState.HandleDown();
+  wifiListState.HandleDown();
 }
 
 void HandleUp()
@@ -105,11 +109,12 @@ void HandleUp()
   playingState.HandleUp();
   selectSettingsState.HandleUp();
   selectServerState.HandleUp();
+  wifiListState.HandleUp();
 }
 
 void HandleEnter()
 {
-  stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter() || selectSettingsState.HandleEnter() || selectServerState.HandleEnter();
+  stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter() || selectSettingsState.HandleEnter() || selectServerState.HandleEnter() || wifiListState.HandleEnter();;
 }
 
 void HandleRight()
@@ -120,7 +125,7 @@ void HandleRight()
 
 void HandleBack()
 {
-  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack() || selectSettingsState.HandleBack() || selectServerState.HandleBack();
+  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack() || selectSettingsState.HandleBack() || selectServerState.HandleBack() || wifiListState.HandleBack();;
 }
 
 

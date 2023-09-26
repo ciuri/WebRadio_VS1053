@@ -15,6 +15,8 @@
 #include <SelectModeState.h>
 #include <DeviceStartState.h>
 #include <AiEsp32RotaryEncoder.h>
+#include <SelectSettingsState.h>
+#include <SelectServerState.h>
 
 #define ROTARY_ENCODER_A_PIN 42
 #define ROTARY_ENCODER_B_PIN 2
@@ -37,8 +39,11 @@ PlayingState playingState(&vs1053, &currentState, &display);
 StationsListState stationsListState(&currentState, &display, &playingState);
 CountriesListState countriesListState(&currentState, &display, &stationsListState);
 TagsListState tagsListState(&currentState, &display, &stationsListState);
-SelectModeState selectModeState(&currentState, &display, &countriesListState, &tagsListState);
+SelectServerState selectServerState(&currentState, &display);
+SelectSettingsState selectSettingsState(&currentState, &display, &countriesListState, &tagsListState, &selectServerState);
+SelectModeState selectModeState(&currentState, &display, &countriesListState, &tagsListState, &selectSettingsState);
 DeviceStartState deviceStartState(&currentState, &display, &selectModeState);
+
 
 void HandleUp();
 void HandleDown();
@@ -64,7 +69,7 @@ void setup()
 
   display.begin();
   xTaskCreate(HandleLoop, "HandleLoop", 16000, NULL, 3, NULL);
-  currentState = deviceStartState.EnterState();
+  currentState = deviceStartState.EnterState();  
   esp_task_wdt_init(30, false);
 }
 
@@ -76,6 +81,8 @@ void HandleLoops()
   tagsListState.HandleLoop();
   selectModeState.HandleLoop();
   deviceStartState.HandleLoop();
+  selectSettingsState.HandleLoop();
+  selectServerState.HandleLoop();
 }
 
 void HandleDown()
@@ -85,6 +92,8 @@ void HandleDown()
   tagsListState.HandleDown();
   playingState.HandleDown();
   selectModeState.HandleDown();
+  selectSettingsState.HandleDown();
+  selectServerState.HandleDown();
 }
 
 void HandleUp()
@@ -94,11 +103,13 @@ void HandleUp()
   tagsListState.HandleUp();
   selectModeState.HandleUp();
   playingState.HandleUp();
+  selectSettingsState.HandleUp();
+  selectServerState.HandleUp();
 }
 
 void HandleEnter()
 {
-  stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter();
+  stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter() || selectSettingsState.HandleEnter() || selectServerState.HandleEnter();
 }
 
 void HandleRight()
@@ -109,7 +120,7 @@ void HandleRight()
 
 void HandleBack()
 {
-  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack();
+  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack() || selectSettingsState.HandleBack() || selectServerState.HandleBack();
 }
 
 

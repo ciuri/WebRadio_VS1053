@@ -35,7 +35,9 @@ enum UIState
     SELECT_STATION,
     PLAY,
     DEVICE_START,
-    SELECT_SETTINGS
+    SELECT_SETTINGS,
+    SELECT_SERVER_SETTING,
+    
 };
 
 class NamedModeDTO

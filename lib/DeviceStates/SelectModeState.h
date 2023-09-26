@@ -7,8 +7,7 @@
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <DTOs.h>
-
-
+#include <SelectSettingsState.h>
 
 class SelectModeState
 {
@@ -18,9 +17,10 @@ private:
     U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
     CountriesListState *_countriesListState;
     TagsListState *_tagsListState;
+    SelectSettingsState *_selectSettingsState;
 
 public:
-    SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState);
+    SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState* selectSettingsState);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -35,12 +35,13 @@ public:
     bool HandleBack();
 };
 
-SelectModeState::SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState)
+SelectModeState::SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState* selectSettingsState)
 {
     _currentState = currentState;
     _display = display;
     _countriesListState = countriesListState;
     _tagsListState = tagsListState;
+    _selectSettingsState = selectSettingsState;
 }
 
 UIState SelectModeState::EnterState(UIState lastState)
@@ -139,6 +140,9 @@ bool SelectModeState::HandleEnter()
         break;
     case SELECT_COUNTRY:
         *_currentState = _countriesListState->EnterState(MODE_SELECT);
+        break;
+    case SELECT_SETTINGS:
+        *_currentState = _selectSettingsState->EnterState(MODE_SELECT);
         break;
     }
 

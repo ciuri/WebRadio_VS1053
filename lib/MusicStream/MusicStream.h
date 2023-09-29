@@ -3,13 +3,13 @@
 
 #include <WiFiClient.h>
 
-class MusicStream : public WiFiClient
+class ChunkedStream : public WiFiClient
 {
 public:
   long GetChunkSize();
 };
 
-long MusicStream::GetChunkSize()
+long ChunkedStream::GetChunkSize()
 {  
   long startMilis = millis();
   char buffer[8];

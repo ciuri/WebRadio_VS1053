@@ -27,13 +27,20 @@ CircularBuffer<uint8_t, 16384> circularBuffer;
 std::mutex mtx;
 bool overwriteChunking = false;
 bool chunked = false;
+bool bufferOK = true;
+unsigned long bufferProblemStartTime;
+
+void StartPlayTask(String url);
+void StopPlayTask();
+void WaitForState(PlayerState state);
+
 static void PlayTask(void *parameters)
 {
+  bufferOK = true;
   esp_task_wdt_init(30, false);
 
   overwriteChunking = false;
   _playerState = WAITING;
-
   const char *CONTENT_TYPE = "Content-Type";
   const char *ICY_NAME = "icy-name";
   const char *ICY_METAINT = "icy-metaint";
@@ -45,12 +52,10 @@ static void PlayTask(void *parameters)
                           ENCODING, BITRATE, LOCATION};
 
   HTTPClient webRadioHttpClient;
-  MusicStream *_currentStream = NULL;  
+  ChunkedStream *_currentStream = NULL;
   Serial.println("Start Play Task");
   Serial.println(_currentURL);
   stopPlaying = false;
-  // bool result = WebRadioHttpClient.begin("http://icy.unitedradio.it/RMC.mp3");
-  // bool result = WebRadioHttpClient.begin("https://stream.open.fm/368?type=.aac&user=800043471858&player_group=WWW");
   bool result = webRadioHttpClient.begin(_currentURL);
   webRadioHttpClient.collectHeaders(header, sizeof(header) / sizeof(char *));
 
@@ -66,18 +71,18 @@ static void PlayTask(void *parameters)
   }
 
   chunked = webRadioHttpClient.header("Transfer-Encoding").equals("chunked") ? true : false;
- 
+
   while (true && !stopPlaying)
   {
     int len = webRadioHttpClient.getSize();
-    _currentStream = (MusicStream *)webRadioHttpClient.getStreamPtr();
+    _currentStream = (ChunkedStream *)webRadioHttpClient.getStreamPtr();
 
     if (_currentStream == NULL)
     {
       Serial.println("Current Stream is null");
-      stopPlaying=true;
+      stopPlaying = true;
       break;
-    } 
+    }
 
     while (webRadioHttpClient.connected() && (len > 0 || len == -1) && _currentStream != NULL && !stopPlaying)
     {
@@ -99,7 +104,9 @@ static void PlayTask(void *parameters)
           if (!mp3buff)
             Serial.println("Cannot allocate memory to mp3 buffer.");
 
-          int readed = _currentStream->readBytes(mp3buff, toRead);          
+          int readed = _currentStream->readBytes(mp3buff, toRead);
+          if (readed > 0)
+            bufferOK = true;
           for (int i = 0; i < readed; i++)
           {
             mtx.lock();
@@ -126,12 +133,12 @@ static void PlayTask(void *parameters)
     delete[] mp3buff;
     mp3buff = NULL;
   }
-  if(_currentStream != NULL)
+  if (_currentStream != NULL)
     _currentStream->stop();
-  webRadioHttpClient.end();
-  _playerState = STOPPED;
+  webRadioHttpClient.end();  
   circularBuffer.clear();
   Serial.println("Ending play task");
+  _playerState = STOPPED;
   vTaskDelete(playTaskHandle);
 }
 
@@ -142,7 +149,7 @@ static void PlayAudioTask(void *parameters)
   while (true)
   {
     if (circularBuffer.size() > 32)
-    {      
+    {
       uint8_t audio[32];
 
       for (int i = 0; i < 32; i++)
@@ -153,9 +160,9 @@ static void PlayAudioTask(void *parameters)
       }
       vs1053.Play(audio, 32);
 
-      if(circularBuffer.size()<128)
+      if (circularBuffer.size() < 128)
       {
-         std::string info = "Warning  - Buffer size: " + std::to_string(circularBuffer.size());
+        std::string info = "Warning  - Buffer size: " + std::to_string(circularBuffer.size());
         Serial.println(info.c_str());
       }
     }
@@ -165,9 +172,22 @@ static void PlayAudioTask(void *parameters)
         delay(100);
       else
       {
-        std::string info = "Buffer empty: " + std::to_string(circularBuffer.size());
-        Serial.println(info.c_str());             
-       
+        if(bufferOK==true)
+        {
+          bufferOK = false;
+          bufferProblemStartTime = millis();
+        }
+        int problemDuration = (millis()-bufferProblemStartTime)/1000;
+        if(problemDuration >= 5)
+        {
+            StopPlayTask();
+            WaitForState(STOPPED);
+            StartPlayTask(_currentURL);
+        }
+
+        std::string info = "Buffer empty: " + std::to_string(circularBuffer.size()) + " Time: "+std::to_string(problemDuration) +"s";
+        Serial.println(info.c_str());
+
         delay(100);
       }
     }

@@ -42,6 +42,8 @@ UIState WiFiListState::EnterState(UIState lastState)
     _lastState = lastState;
     modes.clear();
 
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
     int networkCount = WiFi.scanNetworks();
 
     for (int i = 0; i < networkCount; i++)

@@ -20,7 +20,7 @@ private:
     SelectSettingsState *_selectSettingsState;
 
 public:
-    SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState* selectSettingsState);
+    SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -35,7 +35,7 @@ public:
     bool HandleBack();
 };
 
-SelectModeState::SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState* selectSettingsState)
+SelectModeState::SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState)
 {
     _currentState = currentState;
     _display = display;
@@ -61,9 +61,11 @@ UIState SelectModeState::EnterState(UIState lastState)
     settings.name = "Settings";
     settings.state = SELECT_SETTINGS;
 
-
-    modes.push_back(byCountry);
-    modes.push_back(byTag);
+    if (WiFi.status() == WL_CONNECTED)
+    {
+        modes.push_back(byCountry);
+        modes.push_back(byTag);
+    }
     modes.push_back(settings);
     return MODE_SELECT;
 }
@@ -76,10 +78,10 @@ void SelectModeState::HandleLoop()
     _display->setFont(u8g2_font_NokiaSmallPlain_tf);
     _display->firstPage();
     do
-    { 
-         _display->setCursor(40,8);
+    {
+        _display->setCursor(40, 8);
         _display->printf("MAIN MENU");
-    
+
         for (int i = 0; i < modes.size(); i++)
         {
             char rowText[120];

@@ -44,14 +44,21 @@ UIState DeviceStartState::EnterState()
 {
     *_currentState = DEVICE_START;
     Serial.begin(115200);
-    Serial.print("Wifi connecting...");
+    Serial.print("Wifi connecting...");   
     WiFi.begin(ssid, password);
+    unsigned long wifiConnectStartTime = millis();
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
         Serial.print(".");
+        if(millis()-wifiConnectStartTime>10000)
+        {
+            Serial.println("Could not connect to WiFi");
+            break;
+        }
     }
-    Serial.println("Wifi connected.");
+    if(WiFi.status() == WL_CONNECTED)
+        Serial.println("Wifi connected.");
     _startStage = AUDIO;
     vs1053.Init();
     StartAudioPlayTask();

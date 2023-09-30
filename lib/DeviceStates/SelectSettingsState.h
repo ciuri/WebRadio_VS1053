@@ -60,8 +60,13 @@ UIState SelectSettingsState::EnterState(UIState lastState)
     wifi.name = "WiFi settings";
     wifi.state = SELECT_WIFI_SETTING;
 
+    NamedModeDTO restart;
+    restart.name = "Restart";
+    restart.state= RESTART;
+
     modes.push_back(servers);
     modes.push_back(wifi);
+    modes.push_back(restart);
     return SELECT_SETTINGS;
 }
 
@@ -137,6 +142,10 @@ bool SelectSettingsState::HandleEnter()
         break;
     case SELECT_WIFI_SETTING:
         *_currentState = _wifiListState->EnterState(SELECT_SETTINGS);
+        break;
+    case RESTART:
+        ESP.restart();
+        break;
     }
 
     return true;

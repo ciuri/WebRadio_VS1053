@@ -1,3 +1,5 @@
+#define ARDUINOJSON_ENABLE_ARDUINO_STRING 1
+
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "VS1053Device.h"
@@ -18,12 +20,17 @@
 #include <SelectSettingsState.h>
 #include <SelectServerState.h>
 #include <WiFiListState.h>
+#include <FS.h>
+#include <SPIFFS.h>
+#include <DeviceConfiguration.h>
 
+#define FORMAT_SPIFFS_IF_FAILED true
 #define ROTARY_ENCODER_A_PIN 42
 #define ROTARY_ENCODER_B_PIN 2
 #define ROTARY_ENCODER_BUTTON_PIN 1
 #define ROTARY_ENCODER_STEPS 4
 
+DeviceConfiguration config;
 UIState currentState;
 VS1053Device vs1053;
 DeviceStartStage _startStage = WIFI;
@@ -44,7 +51,7 @@ SelectServerState selectServerState(&currentState, &display);
 WiFiListState wifiListState(&currentState, &display);
 SelectSettingsState selectSettingsState(&currentState, &display, &countriesListState, &tagsListState, &selectServerState, &wifiListState);
 SelectModeState selectModeState(&currentState, &display, &countriesListState, &tagsListState, &selectSettingsState);
-DeviceStartState deviceStartState(&currentState, &display, &selectModeState);
+DeviceStartState deviceStartState(&currentState, &display, &selectModeState, &config);
 
 void HandleUp();
 void HandleDown();
@@ -63,14 +70,23 @@ static void HandleLoop(void *parameters);
 
 void setup()
 {
+  Serial.begin(115200);
+  if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED))
+  {
+    Serial.println("SPIFFS Mount Failed");
+    return;
+  }
+  
+  config.LoadConfiguration();
+
   rotaryEncoder.begin();
   rotaryEncoder.setup(readEncoderISR);
-  rotaryEncoder.setBoundaries(0, 1000, true); 
+  rotaryEncoder.setBoundaries(0, 1000, true);
   rotaryEncoder.setAcceleration(250);
 
   display.begin();
   xTaskCreate(HandleLoop, "HandleLoop", 16000, NULL, 3, NULL);
-  currentState = deviceStartState.EnterState();  
+  currentState = deviceStartState.EnterState();
   esp_task_wdt_init(30, false);
 }
 
@@ -85,7 +101,6 @@ void HandleLoops()
   selectSettingsState.HandleLoop();
   selectServerState.HandleLoop();
   wifiListState.HandleLoop();
-  
 }
 
 void HandleDown()
@@ -114,7 +129,8 @@ void HandleUp()
 
 void HandleEnter()
 {
-  stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter() || selectSettingsState.HandleEnter() || selectServerState.HandleEnter() || wifiListState.HandleEnter();;
+  stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter() || selectSettingsState.HandleEnter() || selectServerState.HandleEnter() || wifiListState.HandleEnter();
+  ;
 }
 
 void HandleRight()
@@ -125,53 +141,53 @@ void HandleRight()
 
 void HandleBack()
 {
-  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack() || selectSettingsState.HandleBack() || selectServerState.HandleBack() || wifiListState.HandleBack();;
+  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack() || selectSettingsState.HandleBack() || selectServerState.HandleBack() || wifiListState.HandleBack();
+  ;
 }
 
+unsigned long shortPressAfterMiliseconds = 50;
+unsigned long longPressAfterMiliseconds = 350; 
 
-unsigned long shortPressAfterMiliseconds = 50;   //how long short press shoud be. Do not set too low to avoid bouncing (false press events).
-unsigned long longPressAfterMiliseconds = 350;  //how long čong press shoud be.
-
-
-void on_button_short_click() {
+void on_button_short_click()
+{
   HandleEnter();
 }
 
-void on_button_long_click() {
+void on_button_long_click()
+{
   HandleBack();
 }
 
-void handle_rotary_button() {
+void handle_rotary_button()
+{
   static unsigned long lastTimeButtonDown = 0;
   static bool wasButtonDown = false;
 
-  bool isEncoderButtonDown = rotaryEncoder.isEncoderButtonDown();
-  //isEncoderButtonDown = !isEncoderButtonDown; //uncomment this line if your button is reversed
+  bool isEncoderButtonDown = rotaryEncoder.isEncoderButtonDown();  
 
-  if (isEncoderButtonDown) {
-    Serial.print("+");  //REMOVE THIS LINE IF YOU DONT WANT TO SEE
-    if (!wasButtonDown) {
-      //start measuring
+  if (isEncoderButtonDown)
+  {   
+    if (!wasButtonDown)
+    {
       lastTimeButtonDown = millis();
     }
-    //else we wait since button is still down
     wasButtonDown = true;
     return;
   }
-
-  //button is up
-  if (wasButtonDown) {
-    Serial.println("");  //REMOVE THIS LINE IF YOU DONT WANT TO SEE
-    //click happened, lets see if it was short click, long click or just too short
-    if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
+  
+  if (wasButtonDown)
+  { 
+    if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds)
+    {
       on_button_long_click();
-    } else if (millis() - lastTimeButtonDown >= shortPressAfterMiliseconds) {
+    }
+    else if (millis() - lastTimeButtonDown >= shortPressAfterMiliseconds)
+    {
       on_button_short_click();
     }
   }
   wasButtonDown = false;
 }
-
 
 static void HandleLoop(void *parameters)
 {
@@ -212,13 +228,12 @@ static void HandleLoop(void *parameters)
     }
 
     int encoderChanged = rotaryEncoder.encoderChanged();
-     if (encoderChanged)
-    {                       
-        if(encoderChanged<0)
-          HandleDown();
-        if(encoderChanged>0)
-          HandleUp();        
-
+    if (encoderChanged)
+    {
+      if (encoderChanged < 0)
+        HandleDown();
+      if (encoderChanged > 0)
+        HandleUp();
     }
     handle_rotary_button();
   }

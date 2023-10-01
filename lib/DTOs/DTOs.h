@@ -1,20 +1,23 @@
 #ifndef RADIOSTATIONDTO_H
 #define RADIOSTATIONDTO_H
+#define ARDUINOJSON_ENABLE_ARDUINO_STRING 1
+
+#include <ArduinoJson.h>
 
 using namespace std;
 class RadioStationDTO
 {
 public:
     String Name;
-    String  Url;
-    int  Bitrate;
-    String  RadioFrequency;
+    String Url;
+    int Bitrate;
+    String RadioFrequency;
     String Country;
 };
 
 class CountryDTO
 {
-    public:
+public:
     String code;
     String name;
     int count;
@@ -22,7 +25,7 @@ class CountryDTO
 
 class TagDTO
 {
-    public:
+public:
     String name;
     int count;
 };
@@ -38,17 +41,15 @@ enum UIState
     SELECT_SETTINGS,
     SELECT_SERVER_SETTING,
     SELECT_WIFI_SETTING,
-    RESTART    
+    RESTART
 };
 
 class NamedModeDTO
 {
-    public:
+public:
     String name;
     UIState state;
 };
-
-
 
 enum DeviceStartStage
 {

@@ -5,20 +5,20 @@
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <DTOs.h>
+#include <DeviceConfiguration.h>
 
 class DeviceStartState
 {
 private:
+    DeviceConfiguration* _config;
     UIState _lastState;
     UIState *_currentState;
     U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
     SelectModeState *_selectModeState;
     DeviceStartStage _startStage = WIFI;
-    const char *ssid = "UPC97C7D2D";
-    const char *password = "jw4hejbQpcpk";
 
 public:
-    DeviceStartState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, SelectModeState *selectModeState);
+    DeviceStartState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, SelectModeState *selectModeState, DeviceConfiguration* config);
     UIState EnterState();
     void HandleLoop();
     void HandleUp();
@@ -33,19 +33,19 @@ public:
     bool HandleBack();
 };
 
-DeviceStartState::DeviceStartState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, SelectModeState *selectModeState)
+DeviceStartState::DeviceStartState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, SelectModeState *selectModeState, DeviceConfiguration* config)
 {
     _currentState = currentState;
     _display = display;
     _selectModeState = selectModeState;
+    _config = config;
 }
 
 UIState DeviceStartState::EnterState()
 {
-    *_currentState = DEVICE_START;
-    Serial.begin(115200);
+    *_currentState = DEVICE_START;  
     Serial.print("Wifi connecting...");   
-    WiFi.begin(ssid, password);
+    WiFi.begin(_config->wifiName.c_str(), _config->wifiPassword.c_str());
     unsigned long wifiConnectStartTime = millis();
     while (WiFi.status() != WL_CONNECTED)
     {

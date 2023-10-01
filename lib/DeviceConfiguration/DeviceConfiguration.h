@@ -18,7 +18,7 @@ struct DeviceConfiguration
 
     String SerializeConfguration()
     {
-        DynamicJsonDocument configJson(1024);
+        DynamicJsonDocument configJson(4096);
         configJson["serverName"] = serverName;
         configJson["wifiName"] = wifiName;
         configJson["wifiPassword"] = wifiPassword;
@@ -42,7 +42,7 @@ struct DeviceConfiguration
 
     void DeserializeDeviceConfiguration(const char *jsonString)
     {
-        const size_t capacity = JSON_OBJECT_SIZE(4) + 1000;
+        const size_t capacity = JSON_OBJECT_SIZE(4) + 80000;
         DynamicJsonDocument jsonDocument(capacity);
 
         DeserializationError error = deserializeJson(jsonDocument, jsonString);
@@ -56,7 +56,7 @@ struct DeviceConfiguration
         serverName = jsonDocument["serverName"].as<String>();
         wifiName = jsonDocument["wifiName"].as<String>();
         wifiPassword = jsonDocument["wifiPassword"].as<String>();
-       
+        favorites.clear();
         JsonArray favoritesArray = jsonDocument["favorites"];
         for (const auto &station : favoritesArray)
         {
@@ -65,6 +65,7 @@ struct DeviceConfiguration
             favoriteStation.Country = station["country"].as<String>();
             favoriteStation.Name = station["name"].as<String>();
             favoriteStation.RadioFrequency = station["radiofrequency"].as<String>();
+            favoriteStation.Url = station["url"].as<String>();
             favorites.push_back(favoriteStation);
         }        
     }
@@ -80,6 +81,8 @@ struct DeviceConfiguration
     void LoadConfiguration()
     {
         String s = readFile(SPIFFS, CONFIGURATION_FILE_PATH);
+        Serial.println("Load configuration:");
+        Serial.println(s);
         DeserializeDeviceConfiguration(s.c_str());
     }
 };

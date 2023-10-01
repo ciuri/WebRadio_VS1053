@@ -13,9 +13,10 @@ private:
     UIState *_currentState;
     U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
     PlayingState *_playingState;
+    RadioListHttpClient* _radioListClient;
 
 public:
-    StationsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState);
+    StationsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState, RadioListHttpClient* radioListClient);
     UIState EnterState(UIState lastState, String country, String tag);
     void HandleLoop();
     void HandleUp();
@@ -25,32 +26,33 @@ public:
     void GetRadioUrlsPage();
     vector<RadioStationDTO> radioStations;
     int currentStationIndex = 0;
-    RadioListHttpClient radioListClient;
+   
 
     bool HandleEnter();
     bool HandleBack();
 };
 
-StationsListState::StationsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState)
+StationsListState::StationsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState, RadioListHttpClient* radioListClient)
 {
     _currentState = currentState;
     _display = display;
     _playingState = playingState;
+    _radioListClient = radioListClient;
 }
 
 void StationsListState::GetRadioUrlsPage()
 {
-    radioStations = radioListClient.GetRadioURLs(_lastState);
+    radioStations = _radioListClient->GetRadioURLs(_lastState);
 }
 
 UIState StationsListState::EnterState(UIState lastState, String country, String tag)
 {
     _lastState = lastState;
     currentStationIndex = 0;
-    radioListClient.ResetStationsPageIndex();
-    radioListClient.SetCountry(country);
-    radioListClient.SetTag(tag);   
-    radioStations = radioListClient.GetRadioURLs(_lastState);
+    _radioListClient->ResetStationsPageIndex();
+    _radioListClient->SetCountry(country);
+    _radioListClient->SetTag(tag);   
+    radioStations = _radioListClient->GetRadioURLs(_lastState);
 
     return SELECT_STATION;
 }
@@ -100,7 +102,7 @@ void StationsListState::HandleUp()
     }
     else
     {
-        radioListClient.SetPrevStationsPage();
+        _radioListClient->SetPrevStationsPage();
         GetRadioUrlsPage();
         currentStationIndex = radioStations.size() - 1;
     }
@@ -119,7 +121,7 @@ void StationsListState::HandleDown()
     else
     {
 
-        radioListClient.SetNextStationsPage();
+        _radioListClient->SetNextStationsPage();
         GetRadioUrlsPage();
         currentStationIndex = 0;
     }
@@ -139,7 +141,7 @@ void StationsListState::HandleRight()
     if (*_currentState != SELECT_STATION)
         return;
 
-    radioListClient.SetNextStationsPage();
+    _radioListClient->SetNextStationsPage();
     GetRadioUrlsPage();
     currentStationIndex = 0;
 }
@@ -149,7 +151,7 @@ void StationsListState::HandleLeft()
     if (*_currentState != SELECT_STATION)
         return;
 
-    radioListClient.SetPrevStationsPage();
+    _radioListClient->SetPrevStationsPage();
     GetRadioUrlsPage();
     currentStationIndex = 0;
 }

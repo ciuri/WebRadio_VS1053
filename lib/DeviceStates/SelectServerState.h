@@ -7,8 +7,7 @@
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <DTOs.h>
-
-
+#include <DeviceConfiguration.h>
 
 class SelectServerState
 {
@@ -16,9 +15,10 @@ private:
     UIState _lastState;
     UIState *_currentState;
     U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
-   
+    DeviceConfiguration *_config;
+
 public:
-    SelectServerState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
+    SelectServerState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, DeviceConfiguration *config);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -33,10 +33,11 @@ public:
     bool HandleBack();
 };
 
-SelectServerState::SelectServerState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
+SelectServerState::SelectServerState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, DeviceConfiguration *config)
 {
     _currentState = currentState;
     _display = display;
+    _config = config;
 }
 
 UIState SelectServerState::EnterState(UIState lastState)
@@ -46,7 +47,7 @@ UIState SelectServerState::EnterState(UIState lastState)
 
     NamedModeDTO nl1;
     nl1.name = "nl1.api.radio-browser.info";
-    nl1.state = SELECT_SERVER_SETTING; 
+    nl1.state = SELECT_SERVER_SETTING;
 
     NamedModeDTO de1;
     de1.name = "de1.api.radio-browser.info";
@@ -58,12 +59,12 @@ UIState SelectServerState::EnterState(UIState lastState)
 
     NamedModeDTO at1;
     at1.name = "at1.api.radio-browser.info";
-    at1.state = SELECT_SERVER_SETTING;   
+    at1.state = SELECT_SERVER_SETTING;
 
-    modes.push_back(nl1);    
+    modes.push_back(nl1);
     modes.push_back(de1);
     modes.push_back(de2);
-    modes.push_back(at1); 
+    modes.push_back(at1);
 
     return SELECT_SERVER_SETTING;
 }
@@ -76,14 +77,17 @@ void SelectServerState::HandleLoop()
     _display->setFont(u8g2_font_NokiaSmallPlain_tf);
     _display->firstPage();
     do
-    { 
-         _display->setCursor(35,8);
+    {
+        _display->setCursor(35, 8);
         _display->printf("SELECT SERVER");
-    
+
         for (int i = 0; i < modes.size(); i++)
         {
             char rowText[120];
-            sprintf(rowText, "%s", modes[i].name.c_str());
+            if (modes[i].name == _config->serverName)
+                sprintf(rowText, "%s  V", modes[i].name.c_str());
+            else
+                sprintf(rowText, "%s", modes[i].name.c_str());
             _display->setCursor(0, i * 10 + LIST_START_OFFSET);
             if (i != currentIndex)
             {
@@ -132,8 +136,8 @@ bool SelectServerState::HandleEnter()
 {
     if (*_currentState != SELECT_SERVER_SETTING)
         return false;
-
-    
+    _config->serverName = modes[currentIndex].name;
+    _config->SaveConfiguration();
 
     return true;
 }

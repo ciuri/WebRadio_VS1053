@@ -13,9 +13,10 @@ private:
     UIState *_currentState;
     U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
     StationsListState *_stationsListState;
+    RadioListHttpClient *_radioListClient;
 
 public:
-    CountriesListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState);
+    CountriesListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState, RadioListHttpClient *radioListClient);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -25,28 +26,28 @@ public:
     void GetCountriesPage();
     vector<CountryDTO> countries;
     int currentIndex = 0;
-    RadioListHttpClient radioListClient;
 
     bool HandleEnter();
     bool HandleBack();
 };
 
-CountriesListState::CountriesListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState)
+CountriesListState::CountriesListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState, RadioListHttpClient *radioListClient)
 {
     _stationsListState = stationsListState;
     _currentState = currentState;
     _display = display;
+    _radioListClient = radioListClient;
 }
 
 void CountriesListState::GetCountriesPage()
 {
-    countries = radioListClient.GetCountries();
+    countries = _radioListClient->GetCountries();
 }
 
 UIState CountriesListState::EnterState(UIState lastState)
 {
     lastState = _lastState;
-    countries = radioListClient.GetCountries();
+    countries = _radioListClient->GetCountries();
     return SELECT_COUNTRY;
 }
 
@@ -73,11 +74,7 @@ void CountriesListState::HandleLoop()
                 _display->drawButtonUTF8(2, i * 10 + 8, U8G2_BTN_BW1, 120, 1, 0, rowText);
             }
         }
-
-        /*display->setCursor(0, 10);
-        display->printf(countries[currentIndex].name.c_str());
-        display->setCursor(0, 20);
-        display->printf("Stations: %i ", countries[currentIndex].count);*/
+       
     } while (_display->nextPage());
 }
 
@@ -101,7 +98,7 @@ void CountriesListState::HandleUp()
     }
     else
     {
-        radioListClient.SetPrevCountriesPage();
+        _radioListClient->SetPrevCountriesPage();
         GetCountriesPage();
         currentIndex = countries.size() - 1;
     }
@@ -118,7 +115,7 @@ void CountriesListState::HandleDown()
     }
     else
     {
-        radioListClient.SetNextCountriesPage();
+       _radioListClient->SetNextCountriesPage();
         GetCountriesPage();
         currentIndex = 0;
     }
@@ -138,7 +135,7 @@ void CountriesListState::HandleRight()
     if (*_currentState != SELECT_COUNTRY)
         return;
 
-    radioListClient.SetNextStationsPage();
+    _radioListClient->SetNextStationsPage();
     GetCountriesPage();
     currentIndex = 0;
 }
@@ -148,7 +145,7 @@ void CountriesListState::HandleLeft()
     if (*_currentState != SELECT_COUNTRY)
         return;
 
-    radioListClient.SetPrevStationsPage();
+    _radioListClient->SetPrevStationsPage();
     GetCountriesPage();
     currentIndex = 0;
 }

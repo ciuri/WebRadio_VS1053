@@ -4,12 +4,14 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <DTOs.h>
+#include <DeviceConfiguration.h>
 
 using namespace std;
 
 class RadioListHttpClient
 {
 private:
+    DeviceConfiguration *_config;
     HTTPClient httpClient;
     int tagsPerPage = 6;
     int tagsPageIndex = 0;
@@ -18,10 +20,10 @@ private:
     int stationsPerPage = 6;
     int stationsPageIndex = 0;
     String selectedTag;
-    String selectedCountry;  
-    String serverName =  "nl1.api.radio-browser.info";
+    String selectedCountry;    
 
 public:
+    RadioListHttpClient(DeviceConfiguration *config);
     vector<TagDTO> GetTags();
     vector<CountryDTO> GetCountries();
     vector<RadioStationDTO> GetRadioURLsByCountry();
@@ -39,6 +41,11 @@ public:
     int GetPageStartIndex();
 };
 
+RadioListHttpClient::RadioListHttpClient(DeviceConfiguration *config)
+{
+    _config = config;   
+}
+
 void RadioListHttpClient::ResetStationsPageIndex()
 {
     stationsPageIndex = 0;
@@ -50,7 +57,7 @@ int RadioListHttpClient::GetPageStartIndex()
 }
 
 vector<RadioStationDTO> RadioListHttpClient::GetRadioURLs(UIState state)
-{    
+{
     Serial.println(state);
     switch (state)
     {
@@ -61,8 +68,8 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLs(UIState state)
         return GetRadioURLsByCountry();
         break;
     default:
-        return GetRadioURLsByCountry(); 
-    }    
+        return GetRadioURLsByCountry();
+    }
 }
 
 vector<TagDTO> RadioListHttpClient::GetTags()
@@ -70,7 +77,7 @@ vector<TagDTO> RadioListHttpClient::GetTags()
     vector<TagDTO> outList;
     DynamicJsonDocument jsonDoc(8072);
     char urlText[300];
-    sprintf(urlText, "https://%s/json/tags?order=stationcount&limit=%i&reverse=true&offset=%i",serverName.c_str(), tagsPerPage, tagsPerPage * tagsPageIndex);
+    sprintf(urlText, "https://%s/json/tags?order=stationcount&limit=%i&reverse=true&offset=%i", _config->serverName.c_str(), tagsPerPage, tagsPerPage * tagsPageIndex);
     httpClient.begin(urlText);
     int result = httpClient.GET();
     // String outString = httpClient.getString();
@@ -93,7 +100,7 @@ vector<CountryDTO> RadioListHttpClient::GetCountries()
     vector<CountryDTO> outList;
     DynamicJsonDocument jsonDoc(8072);
     char urlText[400];
-    sprintf(urlText, "https://%s/json/countries?order=stationcount&limit=%i&reverse=true&offset=%i", serverName.c_str(), countriesPerPage, countriesPerPage * countriesPageIndex);
+    sprintf(urlText, "https://%s/json/countries?order=stationcount&limit=%i&reverse=true&offset=%i", _config->serverName.c_str(), countriesPerPage, countriesPerPage * countriesPageIndex);
     httpClient.begin(urlText);
     httpClient.GET();
     deserializeJson(jsonDoc, httpClient.getStream());
@@ -116,7 +123,7 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByCountry()
     vector<RadioStationDTO> outList;
     DynamicJsonDocument jsonDoc(30000);
     char urlText[300];
-    sprintf(urlText, "http://%s/json/stations/bycountrycodeexact/%s?limit=%i&order=clickcount&reverse=true&hidebroken=true&offset=%i",serverName.c_str(), selectedCountry, stationsPerPage, stationsPerPage * stationsPageIndex);
+    sprintf(urlText, "http://%s/json/stations/bycountrycodeexact/%s?limit=%i&order=clickcount&reverse=true&hidebroken=true&offset=%i", _config->serverName.c_str(), selectedCountry, stationsPerPage, stationsPerPage * stationsPageIndex);
     httpClient.begin(urlText);
     int result = httpClient.GET();
     // String outString = httpClient.getString();
@@ -147,7 +154,7 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByTag()
     vector<RadioStationDTO> outList;
     DynamicJsonDocument jsonDoc(30000);
     char urlText[300];
-    sprintf(urlText, "http://%s/json/stations/bytag/%s?limit=%i&order=clickcount&reverse=true&hidebroken=true&offset=%i",serverName.c_str(), selectedTag, stationsPerPage, stationsPerPage * stationsPageIndex);
+    sprintf(urlText, "http://%s/json/stations/bytag/%s?limit=%i&order=clickcount&reverse=true&hidebroken=true&offset=%i", _config->serverName.c_str(), selectedTag, stationsPerPage, stationsPerPage * stationsPageIndex);
     httpClient.begin(urlText);
     int result = httpClient.GET();
     // String outString = httpClient.getString();

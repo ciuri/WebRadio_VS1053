@@ -13,9 +13,10 @@ private:
     UIState *_currentState;
     U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
     StationsListState *_stationsListState;
+    RadioListHttpClient* _radioListClient;
 
 public:
-    TagsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState);
+    TagsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState, RadioListHttpClient* radioListClient);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -24,29 +25,29 @@ public:
     void HandleRight();
     void GetTagsPage();
     vector<TagDTO> tags;
-    int currentIndex = 0;
-    RadioListHttpClient radioListClient;
+    int currentIndex = 0;   
 
     bool HandleEnter();
     bool HandleBack();
 };
 
-TagsListState::TagsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState)
+TagsListState::TagsListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, StationsListState *stationsListState, RadioListHttpClient* radioListClient)
 {
     _stationsListState = stationsListState;
     _currentState = currentState;
     _display = display;
+    _radioListClient = radioListClient;
 }
 
 void TagsListState::GetTagsPage()
 {
-    tags = radioListClient.GetTags();
+    tags = _radioListClient->GetTags();
 }
 
 UIState TagsListState::EnterState(UIState lastState)
 {
     lastState = _lastState;
-    tags = radioListClient.GetTags();
+    tags = _radioListClient->GetTags();
     return SELECT_TAG;
 }
 
@@ -95,7 +96,7 @@ void TagsListState::HandleUp()
     }
     else
     {
-        radioListClient.SetPrevTagsPage();
+        _radioListClient->SetPrevTagsPage();
         GetTagsPage();
         currentIndex = tags.size() - 1;
     }
@@ -112,7 +113,7 @@ void TagsListState::HandleDown()
     }
     else
     {
-        radioListClient.SetNextTagsPage();
+        _radioListClient->SetNextTagsPage();
         GetTagsPage();
         currentIndex = 0;
     }
@@ -132,7 +133,7 @@ void TagsListState::HandleRight()
     if (*_currentState != SELECT_TAG)
         return;
 
-    radioListClient.SetNextTagsPage();
+    _radioListClient->SetNextTagsPage();
     GetTagsPage();
     currentIndex = 0;
 }
@@ -142,7 +143,7 @@ void TagsListState::HandleLeft()
     if (*_currentState != SELECT_TAG)
         return;
 
-    radioListClient.SetPrevTagsPage();
+    _radioListClient->SetPrevTagsPage();
     GetTagsPage();
     currentIndex = 0;
 }

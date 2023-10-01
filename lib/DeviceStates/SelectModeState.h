@@ -8,6 +8,7 @@
 #include <U8g2lib.h>
 #include <DTOs.h>
 #include <SelectSettingsState.h>
+#include <SelectFavoritesState.h>
 
 class SelectModeState
 {
@@ -18,9 +19,10 @@ private:
     CountriesListState *_countriesListState;
     TagsListState *_tagsListState;
     SelectSettingsState *_selectSettingsState;
+    SelectFavoritesState* _selectFavoritesState;
 
 public:
-    SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState);
+    SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState, SelectFavoritesState* selectFavoritesState);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -35,19 +37,24 @@ public:
     bool HandleBack();
 };
 
-SelectModeState::SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState)
+SelectModeState::SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState, SelectFavoritesState* selectFavoritesState)
 {
     _currentState = currentState;
     _display = display;
     _countriesListState = countriesListState;
     _tagsListState = tagsListState;
     _selectSettingsState = selectSettingsState;
+    _selectFavoritesState = selectFavoritesState;
 }
 
 UIState SelectModeState::EnterState(UIState lastState)
 {
     _lastState = lastState;
     modes.clear();
+
+    NamedModeDTO favorites;
+    favorites.name = "Favorites";
+    favorites.state = SELECT_FAVORITES;
 
     NamedModeDTO byCountry;
     byCountry.name = "Select by country";
@@ -63,6 +70,7 @@ UIState SelectModeState::EnterState(UIState lastState)
 
     if (WiFi.status() == WL_CONNECTED)
     {
+        modes.push_back(favorites);
         modes.push_back(byCountry);
         modes.push_back(byTag);
     }
@@ -137,6 +145,9 @@ bool SelectModeState::HandleEnter()
 
     switch (modes[currentIndex].state)
     {
+    case SELECT_FAVORITES:
+        *_currentState = _selectFavoritesState->EnterState(MODE_SELECT);
+        break;
     case SELECT_TAG:
         *_currentState = _tagsListState->EnterState(MODE_SELECT);
         break;

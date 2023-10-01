@@ -5,6 +5,7 @@
 #include <U8g2lib.h>
 #include <DTOs.h>
 #include "VS1053Device.h"
+#include <DeviceConfiguration.h>
 
 class PlayingState
 {
@@ -12,7 +13,7 @@ private:
     UIState _lastState;
     UIState*  _currentState;
     U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI* _display;
-
+    DeviceConfiguration* _config;
     RadioStationDTO currentStation;
     VS1053Device *_vs1053;
     u8g2_uint_t offset; // current offset for the scrolling text
@@ -20,22 +21,23 @@ private:
     const uint8_t* GetFontForLength(int length);
 
 public:
-    PlayingState(VS1053Device *vs1053, UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
+    PlayingState(VS1053Device *vs1053, UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, DeviceConfiguration* config);
     UIState EnterState(UIState lastState, RadioStationDTO station);
     void HandleLoop();
     void HandleUp();
     void HandleDown();
     void HandleLeft();
     void HandleRight();
-    void HandleEnter();
+    bool HandleEnter();
     bool HandleBack();
 };
 
-PlayingState::PlayingState(VS1053Device *vs1053, UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
+PlayingState::PlayingState(VS1053Device *vs1053, UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, DeviceConfiguration* config)
 {
     _vs1053 = vs1053;
     _currentState = currentState;
     _display = display;
+    _config = config;
 }
 
 UIState PlayingState::EnterState(UIState lastState, RadioStationDTO station)
@@ -111,11 +113,14 @@ void PlayingState::HandleDown()
     vs1053.VolumeUp();
 }
 
-void PlayingState::HandleEnter()
+bool PlayingState::HandleEnter()
 {
      if(*_currentState!=PLAY)    
-        return;
+        return false;
+    _config->favorites.push_back(currentStation);
+    _config->SaveConfiguration();
 
     *_currentState = PLAY;
+    return true;
 }
 #endif

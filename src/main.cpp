@@ -23,12 +23,15 @@
 #include <FS.h>
 #include <SPIFFS.h>
 #include <DeviceConfiguration.h>
+#include <EnterWifiPasswordState.h>
 
 #define FORMAT_SPIFFS_IF_FAILED true
 #define ROTARY_ENCODER_A_PIN 42
 #define ROTARY_ENCODER_B_PIN 2
 #define ROTARY_ENCODER_BUTTON_PIN 1
 #define ROTARY_ENCODER_STEPS 4
+
+/*"wifiName":"UPC97C7D2D","wifiPassword":"jw4hejbQpcpk"*/
 
 DeviceConfiguration config;
 UIState currentState;
@@ -50,10 +53,12 @@ StationsListState stationsListState(&currentState, &display, &playingState, &rad
 CountriesListState countriesListState(&currentState, &display, &stationsListState, &radioListClient);
 TagsListState tagsListState(&currentState, &display, &stationsListState, &radioListClient);
 SelectServerState selectServerState(&currentState, &display, &config);
-WiFiListState wifiListState(&currentState, &display);
+EnterWifiPasswordState enterWifiPasswordState(&currentState, &display, &config);
+WiFiListState wifiListState(&currentState, &display, &enterWifiPasswordState);
 SelectSettingsState selectSettingsState(&currentState, &display, &countriesListState, &tagsListState, &selectServerState, &wifiListState);
 SelectModeState selectModeState(&currentState, &display, &countriesListState, &tagsListState, &selectSettingsState, &selectFavoritesState);
 DeviceStartState deviceStartState(&currentState, &display, &selectModeState, &config);
+
 
 void HandleUp();
 void HandleDown();
@@ -80,6 +85,8 @@ void setup()
   }
   
   config.LoadConfiguration();
+  //config.wifiName = "UPC97C7D2D";
+  //config.wifiPassword = "jw4hejbQpcpk";
   //config.favorites.clear();
   //config.SaveConfiguration();
   rotaryEncoder.begin();
@@ -105,6 +112,7 @@ void HandleLoops()
   selectServerState.HandleLoop();
   wifiListState.HandleLoop();
   selectFavoritesState.HandleLoop();
+  enterWifiPasswordState.HandleLoop();
 }
 
 void HandleDown()
@@ -118,6 +126,7 @@ void HandleDown()
   selectServerState.HandleDown();
   wifiListState.HandleDown();
   selectFavoritesState.HandleDown();
+  enterWifiPasswordState.HandleDown();
 }
 
 void HandleUp()
@@ -131,11 +140,12 @@ void HandleUp()
   selectServerState.HandleUp();
   wifiListState.HandleUp();
   selectFavoritesState.HandleUp();
+  enterWifiPasswordState.HandleUp();
 }
 
 void HandleEnter()
 {
-  stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter() || selectSettingsState.HandleEnter() || selectServerState.HandleEnter() || wifiListState.HandleEnter() || selectFavoritesState.HandleEnter() || playingState.HandleEnter();
+  stationsListState.HandleEnter() || countriesListState.HandleEnter() || tagsListState.HandleEnter() || selectModeState.HandleEnter() || selectSettingsState.HandleEnter() || selectServerState.HandleEnter() || wifiListState.HandleEnter() || selectFavoritesState.HandleEnter() || playingState.HandleEnter() || enterWifiPasswordState.HandleEnter();
 }
 
 void HandleRight()
@@ -146,7 +156,7 @@ void HandleRight()
 
 void HandleBack()
 {
-  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack() || selectSettingsState.HandleBack() || selectServerState.HandleBack() || wifiListState.HandleBack() || selectFavoritesState.HandleBack();
+  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack() || selectSettingsState.HandleBack() || selectServerState.HandleBack() || wifiListState.HandleBack() || selectFavoritesState.HandleBack() || enterWifiPasswordState.HandleBack();
   ;
 }
 

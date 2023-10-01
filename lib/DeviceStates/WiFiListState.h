@@ -7,6 +7,7 @@
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <DTOs.h>
+#include <EnterWifiPasswordState.h>
 
 class WiFiListState
 {
@@ -14,9 +15,10 @@ private:
     UIState _lastState;
     UIState *_currentState;
     U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
+    EnterWifiPasswordState* _enterPasswordState;
 
 public:
-    WiFiListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display);
+    WiFiListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, EnterWifiPasswordState *enterPasswordState);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -31,10 +33,11 @@ public:
     bool HandleBack();
 };
 
-WiFiListState::WiFiListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display)
+WiFiListState::WiFiListState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, EnterWifiPasswordState* enterPasswordState)
 {
     _currentState = currentState;
     _display = display;
+    _enterPasswordState = enterPasswordState;
 }
 
 UIState WiFiListState::EnterState(UIState lastState)
@@ -126,6 +129,7 @@ bool WiFiListState::HandleEnter()
     if (*_currentState != SELECT_WIFI_SETTING)
         return false;
 
+    *_currentState = _enterPasswordState->EnterState(*_currentState, modes[currentIndex].name);
     return true;
 }
 

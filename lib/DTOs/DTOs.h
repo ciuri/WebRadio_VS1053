@@ -43,7 +43,8 @@ enum UIState
     SELECT_SERVER_SETTING,
     SELECT_WIFI_SETTING,
     ENTER_PASSWORD,
-    RESTART
+    RESTART,
+    SLEEP
 };
 
 class NamedModeDTO

@@ -19,10 +19,10 @@ private:
     CountriesListState *_countriesListState;
     TagsListState *_tagsListState;
     SelectSettingsState *_selectSettingsState;
-    SelectFavoritesState* _selectFavoritesState;
+    SelectFavoritesState *_selectFavoritesState;    
 
 public:
-    SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState, SelectFavoritesState* selectFavoritesState);
+    SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState, SelectFavoritesState *selectFavoritesState);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -35,9 +35,10 @@ public:
 
     bool HandleEnter();
     bool HandleBack();
+    void GoSleep();
 };
 
-SelectModeState::SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState, SelectFavoritesState* selectFavoritesState)
+SelectModeState::SelectModeState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, CountriesListState *countriesListState, TagsListState *tagsListState, SelectSettingsState *selectSettingsState, SelectFavoritesState *selectFavoritesState)
 {
     _currentState = currentState;
     _display = display;
@@ -68,6 +69,10 @@ UIState SelectModeState::EnterState(UIState lastState)
     settings.name = "Settings";
     settings.state = SELECT_SETTINGS;
 
+    NamedModeDTO sleep;
+    sleep.name = "Turn off";
+    sleep.state = SLEEP;
+
     if (WiFi.status() == WL_CONNECTED)
     {
         modes.push_back(favorites);
@@ -75,6 +80,7 @@ UIState SelectModeState::EnterState(UIState lastState)
         modes.push_back(byTag);
     }
     modes.push_back(settings);
+    modes.push_back(sleep);
     return MODE_SELECT;
 }
 
@@ -112,6 +118,7 @@ bool SelectModeState::HandleBack()
     if (*_currentState != MODE_SELECT)
         return false;
 
+    GoSleep();
     *_currentState = _lastState;
     return true;
 }
@@ -157,9 +164,19 @@ bool SelectModeState::HandleEnter()
     case SELECT_SETTINGS:
         *_currentState = _selectSettingsState->EnterState(MODE_SELECT);
         break;
+    case SLEEP:
+        GoSleep();
+        break;
     }
 
     return true;
+}
+
+void SelectModeState::GoSleep()
+{
+    _display->clearDisplay();
+    delay(1000);
+    esp_deep_sleep_start();
 }
 
 #endif

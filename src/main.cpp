@@ -77,6 +77,8 @@ static void HandleLoop(void *parameters);
 
 void setup()
 {
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_1, 0);
+
   Serial.begin(115200);
   if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED))
   {
@@ -156,7 +158,7 @@ void HandleRight()
 
 void HandleBack()
 {
-  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack() || selectSettingsState.HandleBack() || selectServerState.HandleBack() || wifiListState.HandleBack() || selectFavoritesState.HandleBack() || enterWifiPasswordState.HandleBack();
+  playingState.HandleBack() || stationsListState.HandleBack() || countriesListState.HandleBack() || tagsListState.HandleBack() || selectSettingsState.HandleBack() || selectServerState.HandleBack() || wifiListState.HandleBack() || selectFavoritesState.HandleBack() || enterWifiPasswordState.HandleBack() || selectModeState.HandleBack();
   ;
 }
 

@@ -4,7 +4,7 @@
 #define VS1053_DCS 15
 #define VS1053_DREQ 16
 
-#define VOLUME 80
+#define VOLUME 100
 
 class VS1053Device
 {
@@ -18,6 +18,7 @@ public:
     void CloseDevice();
     void VolumeUp();
     void VolumeDown();
+    int GetVolume();
 };
 
 void VS1053Device::Init()
@@ -30,6 +31,11 @@ void VS1053Device::Init()
     player->loadDefaultVs1053Patches();
     player->switchToMp3Mode();
     player->setVolume(currentVolume);
+}
+
+int VS1053Device::GetVolume()
+{
+    return player->getVolume();
 }
 
 void VS1053Device::VolumeUp()

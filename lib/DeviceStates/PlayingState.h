@@ -19,6 +19,7 @@ private:
     u8g2_uint_t offset; // current offset for the scrolling text
     u8g2_uint_t width;
     const uint8_t* GetFontForLength(int length);
+    unsigned long saveToFavTime;
 
 public:
     PlayingState(VS1053Device *vs1053, UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, DeviceConfiguration* config);
@@ -30,6 +31,7 @@ public:
     void HandleRight();
     bool HandleEnter();
     bool HandleBack();
+    void AddToFavorites();
 };
 
 PlayingState::PlayingState(VS1053Device *vs1053, UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, DeviceConfiguration* config)
@@ -76,13 +78,20 @@ void PlayingState::HandleLoop()
         _display->setFont(u8g2_font_tiny5_tf);
         _display->setCursor(0,30);
         _display->printf(currentStation.Country.c_str());
+        if(millis()-saveToFavTime<2000)
+        {
+            _display->setCursor(0, 40);
+            _display->printf("Added to favories");
+        }
         _display->setCursor(60, 60);
         _display->printf("\nBuffer size: %i\n", circularBuffer.size());
+        _display->setCursor(0, 50);
+        _display->printf("Volume: %i", vs1053.GetVolume());
         _display->setCursor(0, 60);
         _display->printf("Bitrate: %i", currentStation.Bitrate);
         if (chunked)
         {
-            _display->setCursor(0, 50);
+            _display->setCursor(60, 50);
             _display->printf("Chunked");
         }
     } while (_display->nextPage());
@@ -117,10 +126,19 @@ bool PlayingState::HandleEnter()
 {
      if(*_currentState!=PLAY)    
         return false;
+  
+    *_currentState = PLAY;
+    return true;
+}
+
+void PlayingState::AddToFavorites()
+{ 
+    if(*_currentState!=PLAY)    
+        return;  
+    saveToFavTime = millis();
     _config->favorites.push_back(currentStation);
     _config->SaveConfiguration();
 
     *_currentState = PLAY;
-    return true;
 }
 #endif

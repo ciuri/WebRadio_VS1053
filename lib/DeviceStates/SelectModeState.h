@@ -118,7 +118,7 @@ bool SelectModeState::HandleBack()
     if (*_currentState != MODE_SELECT)
         return false;
 
-    GoSleep();
+  
     *_currentState = _lastState;
     return true;
 }

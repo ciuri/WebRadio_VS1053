@@ -17,10 +17,10 @@ private:
     UIState *_currentState;
     U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *_display;
     PlayingState *_playingState;
-    DeviceConfiguration* _config;
+    DeviceConfiguration *_config;
 
 public:
-    SelectFavoritesState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState, DeviceConfiguration* config);
+    SelectFavoritesState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState, DeviceConfiguration *config);
     UIState EnterState(UIState lastState);
     void HandleLoop();
     void HandleUp();
@@ -28,12 +28,13 @@ public:
     void HandleLeft();
     void HandleRight();
     vector<RadioStationDTO> radioStations;
-    int currentStationIndex = 0;   
+    int currentStationIndex = 0;
     bool HandleEnter();
     bool HandleBack();
+    void RemoveFromFavorites();
 };
 
-SelectFavoritesState::SelectFavoritesState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState, DeviceConfiguration* config)
+SelectFavoritesState::SelectFavoritesState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, PlayingState *playingState, DeviceConfiguration *config)
 {
     _currentState = currentState;
     _display = display;
@@ -44,11 +45,11 @@ SelectFavoritesState::SelectFavoritesState(UIState *currentState, U8G2_SSD1309_1
 UIState SelectFavoritesState::EnterState(UIState lastState)
 {
     _lastState = lastState;
-    currentStationIndex = 0;  
+    currentStationIndex = 0;
     _config->LoadConfiguration();
     radioStations = _config->favorites;
 
-    for(auto &i: radioStations)
+    for (auto &i : radioStations)
     {
         Serial.println(i.Name);
     }
@@ -61,7 +62,7 @@ void SelectFavoritesState::HandleLoop()
     if (*_currentState != SELECT_FAVORITES)
         return;
 
-     _display->setFont(u8g2_font_NokiaSmallPlain_tf);
+    _display->setFont(u8g2_font_NokiaSmallPlain_tf);
     _display->firstPage();
     do
     {
@@ -103,12 +104,14 @@ void SelectFavoritesState::HandleUp()
 {
     if (*_currentState != SELECT_FAVORITES)
         return;
+    if (radioStations.size() == 0)
+        return;
 
     if (currentStationIndex > 0)
     {
         currentStationIndex--;
         Serial.printf("\nSelected: %s, [Bitrate: %i]", radioStations[currentStationIndex].Name.c_str(), radioStations[currentStationIndex].Bitrate);
-    }   
+    }
 }
 
 void SelectFavoritesState::HandleDown()
@@ -116,16 +119,22 @@ void SelectFavoritesState::HandleDown()
     if (*_currentState != SELECT_FAVORITES)
         return;
 
+    if (radioStations.size() == 0)
+        return;
+
     if (currentStationIndex < radioStations.size() - 1)
     {
         currentStationIndex++;
         Serial.printf("\nSelected: %s, [Bitrate: %i]", radioStations[currentStationIndex].Name.c_str(), radioStations[currentStationIndex].Bitrate);
-    }   
+    }
 }
 
 bool SelectFavoritesState::HandleEnter()
 {
     if (*_currentState != SELECT_FAVORITES)
+        return false;
+
+    if(radioStations.size()==0)
         return false;
 
     *_currentState = _playingState->EnterState(SELECT_FAVORITES, radioStations[currentStationIndex]);
@@ -135,7 +144,7 @@ bool SelectFavoritesState::HandleEnter()
 void SelectFavoritesState::HandleRight()
 {
     if (*_currentState != SELECT_FAVORITES)
-        return;   
+        return;
 }
 
 void SelectFavoritesState::HandleLeft()
@@ -144,4 +153,16 @@ void SelectFavoritesState::HandleLeft()
         return;
 }
 
+void SelectFavoritesState::RemoveFromFavorites()
+{
+    if (*_currentState != SELECT_FAVORITES)
+        return;
+    if (radioStations.size() == 0)
+        return;
+
+    _config->favorites.erase(_config->favorites.begin() + currentStationIndex);
+    _config->SaveConfiguration();
+    currentStationIndex = 0;
+    radioStations = _config->favorites;
+}
 #endif

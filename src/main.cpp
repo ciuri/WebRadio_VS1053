@@ -24,6 +24,7 @@
 #include <SPIFFS.h>
 #include <DeviceConfiguration.h>
 #include <EnterWifiPasswordState.h>
+#include <IRremote.hpp>
 
 #define FORMAT_SPIFFS_IF_FAILED true
 #define ROTARY_ENCODER_A_PIN 42
@@ -59,7 +60,6 @@ SelectSettingsState selectSettingsState(&currentState, &display, &countriesListS
 SelectModeState selectModeState(&currentState, &display, &countriesListState, &tagsListState, &selectSettingsState, &selectFavoritesState);
 DeviceStartState deviceStartState(&currentState, &display, &selectModeState, &config);
 
-
 void HandleUp();
 void HandleDown();
 void HandleLeft();
@@ -85,12 +85,13 @@ void setup()
     Serial.println("SPIFFS Mount Failed");
     return;
   }
-  
+
+  IrReceiver.begin(41, false);
   config.LoadConfiguration();
-  //config.wifiName = "UPC97C7D2D";
-  //config.wifiPassword = "jw4hejbQpcpk";
-  //config.favorites.clear();
-  //config.SaveConfiguration();
+  // config.wifiName = "UPC97C7D2D";
+  // config.wifiPassword = "jw4hejbQpcpk";
+  // config.favorites.clear();
+  // config.SaveConfiguration();
   rotaryEncoder.begin();
   rotaryEncoder.setup(readEncoderISR);
   rotaryEncoder.setBoundaries(0, 1000, true);
@@ -163,7 +164,7 @@ void HandleBack()
 }
 
 unsigned long shortPressAfterMiliseconds = 50;
-unsigned long longPressAfterMiliseconds = 350; 
+unsigned long longPressAfterMiliseconds = 350;
 
 void on_button_short_click()
 {
@@ -180,10 +181,10 @@ void handle_rotary_button()
   static unsigned long lastTimeButtonDown = 0;
   static bool wasButtonDown = false;
 
-  bool isEncoderButtonDown = rotaryEncoder.isEncoderButtonDown();  
+  bool isEncoderButtonDown = rotaryEncoder.isEncoderButtonDown();
 
   if (isEncoderButtonDown)
-  {   
+  {
     if (!wasButtonDown)
     {
       lastTimeButtonDown = millis();
@@ -191,9 +192,9 @@ void handle_rotary_button()
     wasButtonDown = true;
     return;
   }
-  
+
   if (wasButtonDown)
-  { 
+  {
     if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds)
     {
       on_button_long_click();
@@ -212,6 +213,52 @@ static void HandleLoop(void *parameters)
   {
     delay(10);
     HandleLoops();
+
+    if (IrReceiver.decode())
+    {
+      int protocol = IrReceiver.decodedIRData.protocol;
+      int addr = IrReceiver.decodedIRData.address;
+      int command = IrReceiver.decodedIRData.command;
+
+      Serial.print(F("Decoded protocol: "));
+      Serial.print(protocol);
+      Serial.print(F(", decoded raw data: "));
+
+      Serial.print(F(", decoded address: "));
+      Serial.print(addr);
+      Serial.print(F(", decoded command: "));
+      Serial.println(command);
+
+      if (protocol == 8 && addr == 56)
+      {
+        switch (command)
+        {
+        case 12:          
+          HandleUp();
+          break;
+        case 13:
+          HandleDown();
+          break;
+        case 23:
+          HandleBack();
+          break;
+        case 234:
+          HandleBack();
+          break;
+        case 31:
+          HandleEnter();
+          break;      
+        case 67:
+          playingState.AddToFavorites();
+          break;
+        case 14:
+          selectFavoritesState.RemoveFromFavorites();
+          break;
+        }
+        delay(10);
+      }
+      IrReceiver.resume();
+    }
 
     if (Serial.available() > 0)
     {

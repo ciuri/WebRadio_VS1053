@@ -72,13 +72,38 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLs(UIState state)
     }
 }
 
+String urlEncode(const char *msg) {
+  const char *hex = "0123456789ABCDEF";
+  String encodedMsg = "";
+
+  while (*msg != '\0') {
+    if (
+        ('a' <= *msg && *msg <= 'z') || ('A' <= *msg && *msg <= 'Z') || ('0' <= *msg && *msg <= '9') || 
+        *msg == '-' || *msg == '_' || *msg == '.' || *msg == '~' || *msg=='/' || *msg == ':' || *msg== '=' || *msg =='?' || *msg=='&') {
+      encodedMsg += *msg;
+    } else {
+      encodedMsg += '%';
+      encodedMsg += hex[(unsigned char)*msg >> 4];
+      encodedMsg += hex[*msg & 0xf];
+    }
+    msg++;
+  }
+  return encodedMsg;
+}
+
+String urlEncode(String msg) {
+  return urlEncode(msg.c_str());
+}
+
+
 vector<TagDTO> RadioListHttpClient::GetTags()
 {
     vector<TagDTO> outList;
     DynamicJsonDocument jsonDoc(8072);
     char urlText[300];
     sprintf(urlText, "https://%s/json/tags?order=stationcount&limit=%i&reverse=true&offset=%i", _config->serverName.c_str(), tagsPerPage, tagsPerPage * tagsPageIndex);
-    httpClient.begin(urlText);
+    Serial.println(urlEncode(urlText));
+    httpClient.begin(urlEncode(urlText));
     int result = httpClient.GET();
     // String outString = httpClient.getString();
     deserializeJson(jsonDoc, httpClient.getStream());
@@ -101,7 +126,8 @@ vector<CountryDTO> RadioListHttpClient::GetCountries()
     DynamicJsonDocument jsonDoc(8072);
     char urlText[400];
     sprintf(urlText, "https://%s/json/countries?order=stationcount&limit=%i&reverse=true&offset=%i", _config->serverName.c_str(), countriesPerPage, countriesPerPage * countriesPageIndex);
-    httpClient.begin(urlText);
+
+    httpClient.begin(urlEncode(urlText));
     httpClient.GET();
     deserializeJson(jsonDoc, httpClient.getStream());
     httpClient.end();
@@ -124,7 +150,7 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByCountry()
     DynamicJsonDocument jsonDoc(30000);
     char urlText[300];
     sprintf(urlText, "http://%s/json/stations/bycountrycodeexact/%s?limit=%i&order=clickcount&reverse=true&hidebroken=true&offset=%i", _config->serverName.c_str(), selectedCountry, stationsPerPage, stationsPerPage * stationsPageIndex);
-    httpClient.begin(urlText);
+    httpClient.begin(urlEncode(urlText));
     int result = httpClient.GET();
     // String outString = httpClient.getString();
     deserializeJson(jsonDoc, httpClient.getStream());
@@ -155,7 +181,8 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByTag()
     DynamicJsonDocument jsonDoc(30000);
     char urlText[300];
     sprintf(urlText, "http://%s/json/stations/bytag/%s?limit=%i&order=clickcount&reverse=true&hidebroken=true&offset=%i", _config->serverName.c_str(), selectedTag, stationsPerPage, stationsPerPage * stationsPageIndex);
-    httpClient.begin(urlText);
+    Serial.println(urlEncode(urlText));
+    httpClient.begin(urlEncode(urlText));
     int result = httpClient.GET();
     // String outString = httpClient.getString();
     deserializeJson(jsonDoc, httpClient.getStream());

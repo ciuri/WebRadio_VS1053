@@ -241,18 +241,23 @@ static void HandleLoop(void *parameters)
           break;
         case 23:
           HandleBack();
+          delay(40);
           break;
         case 234:
           HandleBack();
+          delay(40);
           break;
         case 31:
           HandleEnter();
+          delay(40);
           break;      
         case 67:
           playingState.AddToFavorites();
+          delay(40);
           break;
         case 14:
           selectFavoritesState.RemoveFromFavorites();
+          delay(40);
           break;
         }
         delay(10);

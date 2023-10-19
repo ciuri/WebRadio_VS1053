@@ -18,7 +18,7 @@ struct DeviceConfiguration
 
     String SerializeConfguration()
     {
-        DynamicJsonDocument configJson(4096);
+        DynamicJsonDocument configJson(8192);
         configJson["serverName"] = serverName;
         configJson["wifiName"] = wifiName;
         configJson["wifiPassword"] = wifiPassword;
@@ -42,7 +42,7 @@ struct DeviceConfiguration
 
     void DeserializeDeviceConfiguration(const char *jsonString)
     {
-        const size_t capacity = JSON_OBJECT_SIZE(4) + 80000;
+        const size_t capacity = JSON_OBJECT_SIZE(4) + 160000;
         DynamicJsonDocument jsonDocument(capacity);
 
         DeserializationError error = deserializeJson(jsonDocument, jsonString);

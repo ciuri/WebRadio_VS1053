@@ -75,6 +75,13 @@ void IRAM_ATTR readEncoderISR()
 
 static void HandleLoop(void *parameters);
 
+void GoSleep()
+{
+  display.clearDisplay();
+  delay(1000);
+  esp_deep_sleep_start();
+}
+
 void setup()
 {
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_1, 0);
@@ -233,7 +240,7 @@ static void HandleLoop(void *parameters)
       {
         switch (command)
         {
-        case 12:          
+        case 12:
           HandleUp();
           break;
         case 13:
@@ -250,7 +257,7 @@ static void HandleLoop(void *parameters)
         case 31:
           HandleEnter();
           delay(40);
-          break;      
+          break;
         case 67:
           playingState.AddToFavorites();
           delay(40);
@@ -258,6 +265,17 @@ static void HandleLoop(void *parameters)
         case 14:
           selectFavoritesState.RemoveFromFavorites();
           delay(40);
+          break;
+        case 28:
+          HandleBack();
+          delay(40);
+          HandleBack();
+          delay(40);
+          HandleBack();
+          delay(40);
+          HandleBack();
+          delay(40);
+          GoSleep();
           break;
         }
         delay(10);

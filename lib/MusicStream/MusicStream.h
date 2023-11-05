@@ -28,9 +28,13 @@ long ChunkedStream::GetChunkSize()
         {
           long stopMilis = millis();
           long outVal = strtol(buffer, NULL, 16);
+       //    std::string info = "Chunksize: " + std::to_string(outVal);
+       // Serial.println(info.c_str());
        //   Serial.println("Found at: ");
        //   Serial.println(counts);
           if(counts>15000)
+            return -1;
+          if(outVal>16384)
             return -1;
           return outVal;
         }

@@ -5,6 +5,8 @@ Board: esp32-s3-devkitc-1
 
 Oled display: SSD1309 2,42" 128X64
 
+Connections:
+
 | Module PIN |ESP PIN |
 |--|--|
 |OLED SCK|13|

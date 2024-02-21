@@ -19,7 +19,7 @@ Connections:
 |Encoder A|42|
 |Encoder B|2|
 |Encoder Button|1|
-|IR Recieve|41|
+|IR Receive|41|
 |VS1053 SCK|4|
 |VS1053 MISO|5|
 |VS1053 MOSI|6|

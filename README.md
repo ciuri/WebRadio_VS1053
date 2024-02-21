@@ -9,7 +9,6 @@ Board: esp32-s3-devkitc-1
 |OLED SDA|12|
 |OLED RES|11|
 |OLED DC|10|
-|OLED DC|10|
 |OLED CS|14|
 |Encoder A|42|
 |Encoder B|2|

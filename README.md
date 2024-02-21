@@ -1,6 +1,8 @@
 # WebRadio based on ESP32, VS1053 and oled display.
 It uses radio-browser.info webservice as data source.
 
+YouTube presentation: https://www.youtube.com/watch?v=qbo4sa-MrVo
+
 Board: esp32-s3-devkitc-1
 
 Oled display: SSD1309 2,42" 128X64

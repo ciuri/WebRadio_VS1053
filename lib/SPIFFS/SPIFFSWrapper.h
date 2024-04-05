@@ -96,16 +96,4 @@ void deleteFile(fs::FS &fs, const char * path){
       Serial.println("− delete failed");
    }
 }
-
-  /*listDir(SPIFFS, "/", 0);
-  writeFile(SPIFFS, "/hello.txt", "Hello ");
-  appendFile(SPIFFS, "/hello.txt", "World!\r\n");
-  readFile(SPIFFS, "/hello.txt");
-  renameFile(SPIFFS, "/hello.txt", "/foo.txt");
-  readFile(SPIFFS, "/foo.txt");
-  deleteFile(SPIFFS, "/foo.txt");
-  deleteFile(SPIFFS, "/test.txt");
-  Serial.println( "Test complete" );*/
-
-
 #endif

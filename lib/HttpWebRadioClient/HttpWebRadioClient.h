@@ -94,7 +94,7 @@ static void PlayTask(void *parameters)
         overwriteChunking = true;
         chunkSize = 4096;
       }
-      long toRead = chunkSize; // chunkSize;
+      long toRead = chunkSize; 
 
       while (toRead && !stopPlaying)
       {
@@ -184,7 +184,6 @@ static void PlayAudioTask(void *parameters)
             WaitForState(STOPPED);
             StartPlayTask(_currentURL);
         }
-
         std::string info = "Buffer empty: " + std::to_string(circularBuffer.size()) + " Time: "+std::to_string(problemDuration) +"s";
         Serial.println(info.c_str());
 

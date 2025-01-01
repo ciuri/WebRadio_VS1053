@@ -1,12 +1,14 @@
 #ifndef COUNTRIESLISTSTATE_H
 #define COUNTRIESLISTSTATE_H
+#include <DeviceStateBase.h>
 #include <HttpWebRadioClient.h>
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <DTOs.h>
 #include <RadioListHttpClient.h>
 
-class StationsListState
+
+class StationsListState : public DeviceStateBase
 {
 private:
     UIState _lastState;

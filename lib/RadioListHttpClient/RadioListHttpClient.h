@@ -117,6 +117,7 @@ vector<TagDTO> RadioListHttpClient::GetTags()
         tagDto.count = stationsCount;
         outList.push_back(tagDto);
     }
+    jsonDoc.clear();
     return outList;
 }
 
@@ -126,7 +127,6 @@ vector<CountryDTO> RadioListHttpClient::GetCountries()
     DynamicJsonDocument jsonDoc(8072);
     char urlText[400];
     sprintf(urlText, "https://%s/json/countries?order=stationcount&limit=%i&reverse=true&offset=%i", _config->serverName.c_str(), countriesPerPage, countriesPerPage * countriesPageIndex);
-
     httpClient.begin(urlEncode(urlText));
     httpClient.GET();
     deserializeJson(jsonDoc, httpClient.getStream());
@@ -142,6 +142,7 @@ vector<CountryDTO> RadioListHttpClient::GetCountries()
         c.count = stationsCount;
         outList.push_back(c);
     }
+    jsonDoc.clear();
     return outList;
 }
 vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByCountry()
@@ -172,6 +173,7 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByCountry()
         outList.push_back(rs);
         Serial.println(rs.Name);
     }
+    jsonDoc.clear();
     return outList;
 }
 
@@ -203,7 +205,8 @@ vector<RadioStationDTO> RadioListHttpClient::GetRadioURLsByTag()
         rs.Country = country;
         outList.push_back(rs);
         Serial.println(rs.Name);
-    }
+    }    
+    jsonDoc.clear();
     return outList;
 }
 

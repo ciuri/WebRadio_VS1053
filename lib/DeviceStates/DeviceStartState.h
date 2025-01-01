@@ -1,13 +1,14 @@
 #ifndef DEVICESTARTSTATE_H
 #define DEVICESTARTSTATE_H
 
+#include <DeviceStateBase.h>
 #include <HttpWebRadioClient.h>
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <DTOs.h>
 #include <DeviceConfiguration.h>
 
-class DeviceStartState
+class DeviceStartState : public DeviceStateBase
 {
 private:
     DeviceConfiguration* _config;
@@ -21,16 +22,16 @@ public:
     DeviceStartState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, SelectModeState *selectModeState, DeviceConfiguration* config);
     UIState EnterState();
     void HandleLoop();
-    void HandleUp();
-    void HandleDown();
-    void HandleLeft();
-    void HandleRight();
+    void HandleUp() {};
+    void HandleDown() {};
+    void HandleLeft() {};
+    void HandleRight() {};
     void GetTagsPage();
     vector<NamedModeDTO> modes;
     int currentIndex = 0;
 
-    bool HandleEnter();
-    bool HandleBack();
+    bool HandleEnter() {return false;}
+    bool HandleBack() {return false;}
 };
 
 DeviceStartState::DeviceStartState(UIState *currentState, U8G2_SSD1309_128X64_NONAME2_1_4W_SW_SPI *display, SelectModeState *selectModeState, DeviceConfiguration* config)

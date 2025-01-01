@@ -3,6 +3,7 @@
 
 #define LIST_START_OFFSET 20
 
+#include <DeviceStateBase.h>
 #include <HttpWebRadioClient.h>
 #include <U8x8lib.h>
 #include <U8g2lib.h>
@@ -10,7 +11,8 @@
 #include <SelectSettingsState.h>
 #include <SelectFavoritesState.h>
 
-class SelectModeState
+
+class SelectModeState : public DeviceStateBase
 {
 private:
     UIState _lastState;
@@ -27,8 +29,8 @@ public:
     void HandleLoop();
     void HandleUp();
     void HandleDown();
-    void HandleLeft();
-    void HandleRight();
+    void HandleLeft() {};
+    void HandleRight() {};
     void GetTagsPage();
     vector<NamedModeDTO> modes;
     int currentIndex = 0;

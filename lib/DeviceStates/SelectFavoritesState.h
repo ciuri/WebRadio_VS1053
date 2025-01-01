@@ -2,6 +2,7 @@
 #define SELECT_FAVORITES_STATE_H
 #define LIST_START_OFFSET 20
 
+#include <DeviceStateBase.h>
 #include <HttpWebRadioClient.h>
 #include <U8x8lib.h>
 #include <U8g2lib.h>
@@ -10,7 +11,8 @@
 #include <DeviceConfiguration.h>
 #include <PlayingState.h>
 
-class SelectFavoritesState
+
+class SelectFavoritesState : public DeviceStateBase
 {
 private:
     UIState _lastState;

@@ -3,11 +3,14 @@
 
 #define LIST_START_OFFSET 20
 
+#include <DeviceStateBase.h>
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <DTOs.h>
 #include <DeviceConfiguration.h>
-class EnterWifiPasswordState
+
+
+class EnterWifiPasswordState : public DeviceStateBase
 {
 private:
     UIState _lastState;
@@ -26,8 +29,8 @@ public:
     void HandleLoop();
     void HandleUp();
     void HandleDown();
-    void HandleLeft();
-    void HandleRight();
+    void HandleLeft() {};
+    void HandleRight() {};
     void GetTagsPage();
 
     bool HandleEnter();

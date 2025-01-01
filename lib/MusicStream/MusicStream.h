@@ -10,44 +10,34 @@ public:
 };
 
 long ChunkedStream::GetChunkSize()
-{  
-  long startMilis = millis();
-  char buffer[8];
-  char readedChar;
-  int counts = 0;
-  while (true)
-  {
-    readedChar = (char)read();
-    if (readedChar == '\n')
+{
+    constexpr int TIMEOUT_MS = 2000;  
+    constexpr size_t BUFFER_SIZE = 16; 
+    char buffer[BUFFER_SIZE] = {0};
+    long startMillis = millis();
+    int index = 0;
+       
+    while (millis() - startMillis < TIMEOUT_MS)
     {
-      memset(buffer, 0, 8);
-      for (int i = 0; i < 8; i++)
-      {
-        buffer[i] = (char)read();
-        if (buffer[i] == '\n')
+        if (available())
         {
-          long stopMilis = millis();
-          long outVal = strtol(buffer, NULL, 16);
-       //    std::string info = "Chunksize: " + std::to_string(outVal);
-       // Serial.println(info.c_str());
-       //   Serial.println("Found at: ");
-       //   Serial.println(counts);
-          if(counts>15000)
-            return -1;
-          if(outVal>16384)
-            return -1;
-          return outVal;
+            char readedChar = (char)read();
+
+            
+            if (readedChar == '\n' && index > 0 && buffer[index - 1] == '\r')
+            {
+                buffer[index - 1] = '\0'; 
+                long chunkSize = strtol(buffer, nullptr, 16); 
+
+                if (chunkSize < 0)
+                    return -1; 
+                return chunkSize;
+            }            
+            if (index < BUFFER_SIZE - 1)
+                buffer[index++] = readedChar;
         }
-      }
-    }
-    counts++;
-    if(counts>100000)
-    {
-    //  Serial.println("Counts: ");
-    //  Serial.println(counts);
-      return -1;
-    }
-  }
+    }    
+    return -1;
 }
 
 #endif

@@ -1,5 +1,7 @@
 #ifndef PLAYINGSTATE_H
 #define PLAYINGSTATE_H
+
+#include <DeviceStateBase.h>
 #include <HttpWebRadioClient.h>
 #include <U8x8lib.h>
 #include <U8g2lib.h>
@@ -7,7 +9,8 @@
 #include "VS1053Device.h"
 #include <DeviceConfiguration.h>
 
-class PlayingState
+
+class PlayingState : public DeviceStateBase
 {
 private:
     UIState _lastState;
@@ -27,8 +30,8 @@ public:
     void HandleLoop();
     void HandleUp();
     void HandleDown();
-    void HandleLeft();
-    void HandleRight();
+    void HandleLeft() {};
+    void HandleRight() {};
     bool HandleEnter();
     bool HandleBack();
     void AddToFavorites();

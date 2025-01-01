@@ -3,7 +3,7 @@
 
 #include <HTTPClient.h>
 #include <esp_task_wdt.h>
-#include <MusicStream.h>
+#include <ChunkedStream.h>
 #include <VS1053Device.h>
 #include <CircularBuffer.h>
 #include <mutex>

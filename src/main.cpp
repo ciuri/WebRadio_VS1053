@@ -3,7 +3,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "VS1053Device.h"
-#include "MusicStream.h"
+#include "ChunkedStream.h"
 #include <HttpWebRadioClient.h>
 #include <RadioListHttpClient.h>
 #include <esp_task_wdt.h>

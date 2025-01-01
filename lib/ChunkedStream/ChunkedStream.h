@@ -21,9 +21,7 @@ long ChunkedStream::GetChunkSize()
     {
         if (available())
         {
-            char readedChar = (char)read();
-
-            
+            char readedChar = (char)read();            
             if (readedChar == '\n' && index > 0 && buffer[index - 1] == '\r')
             {
                 buffer[index - 1] = '\0'; 

@@ -32,7 +32,6 @@
 #define ROTARY_ENCODER_BUTTON_PIN 1
 #define ROTARY_ENCODER_STEPS 4
 
-/*"wifiName":"UPC97C7D2D","wifiPassword":"jw4hejbQpcpk"*/
 
 DeviceConfiguration config;
 UIState currentState;
@@ -95,8 +94,8 @@ void setup()
 
   IrReceiver.begin(41, false);
   config.LoadConfiguration();
-  // config.wifiName = "UPC97C7D2D";
-  // config.wifiPassword = "jw4hejbQpcpk";
+  // config.wifiName = "xxx";
+  // config.wifiPassword = "xxxx";
   // config.favorites.clear();
   // config.SaveConfiguration();
   rotaryEncoder.begin();
